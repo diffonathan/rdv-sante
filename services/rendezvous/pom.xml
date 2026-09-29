@@ -146,6 +146,24 @@
 
 	<build>
 		<plugins>
+			<!-- Tests d'intégration séparés des tests unitaires.
+			     Surefire ne ramasse que *Test ; Failsafe prend les *IT, après
+			     le paquetage et sans interrompre le build au premier échec
+			     (verify tranche à la fin). Un test qui démarre PostgreSQL et
+			     Kafka met des dizaines de secondes : le mélanger aux tests
+			     unitaires rendrait la boucle de développement inutilisable. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

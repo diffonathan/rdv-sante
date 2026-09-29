@@ -94,11 +94,31 @@ avec `db` et `kafka` détaillés. C'est la preuve que la chaîne complète répo
 
 | Service | Port | État |
 |---|---|---|
-| rendezvous | 8081 | démarre, migration Flyway appliquée |
+| rendezvous | 8081 | **fonctionnel** — réservation, file d'attente, outbox, SSE |
 | patients | 8082 | squelette, pas encore configuré |
 | notifications | 8083 | squelette, pas encore configuré |
 | gateway | 8080 | squelette, pas encore configuré |
 | front Angular | 4200 | **pas encore créé** |
+
+### L'API du service rendezvous
+
+| Verbe | Chemin | Rôle |
+|---|---|---|
+| `GET` | `/api/cliniques` | les trois cliniques de démonstration |
+| `GET` | `/api/cliniques/{id}/praticiens` | les praticiens d'une clinique |
+| `GET` | `/api/praticiens/{id}/creneaux?jour=2026-10-03` | les créneaux **encore libres** |
+| `POST` | `/api/rendez-vous` | réserver — `201`, ou `409` si le créneau vient d'être pris |
+| `POST` | `/api/rendez-vous/{id}/annulation` | annuler ; le créneau redevient réservable |
+| `GET` | `/api/cliniques/{id}/file` | l'état de la file d'attente |
+| `GET` | `/api/cliniques/{id}/file/flux` | le même état, poussé en **SSE** à chaque mouvement |
+| `POST` | `/api/cliniques/{id}/file/arrivees` | le secrétariat enregistre une arrivée |
+| `POST` | `/api/cliniques/{id}/file/suivant` | appeler le patient suivant |
+
+Exemple, une fois le service lancé :
+
+```bash
+curl -s http://localhost:8081/api/cliniques | head -c 300
+```
 
 ### Arrêter
 
@@ -127,6 +147,13 @@ navigateur en prend 3, ces plafonds ne sont pas un luxe.
 Les tests d'intégration démarrent un vrai PostgreSQL et un vrai Kafka via
 Testcontainers : **aucune base en mémoire**, aucun *mock* de *broker*. Ce qui
 passe en test passe en production. Docker doit donc tourner.
+
+Le test qui compte : `unSeulGagneLaCourse` lance **huit fils qui réservent le
+même créneau à la même milliseconde** et vérifie qu'exactement un aboutit, que
+les sept autres reçoivent un conflit — pas une erreur serveur — et que la base
+ne contient qu'un rendez-vous actif. C'est la démonstration que la décision D4
+tient : une vérification applicative aurait laissé passer plusieurs
+réservations.
 
 ---
 

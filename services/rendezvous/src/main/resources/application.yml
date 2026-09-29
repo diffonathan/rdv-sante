@@ -62,6 +62,11 @@ spring:
   config:
     activate:
       on-profile: dev
+  flyway:
+    # db/demo s'ajoute ici, et NULLE PART ailleurs : une base de production ne
+    # verra jamais le jeu de démonstration, même si quelqu'un se trompe de
+    # fichier de configuration.
+    locations: classpath:db/migration, classpath:db/demo
   jpa:
     properties:
       hibernate:
