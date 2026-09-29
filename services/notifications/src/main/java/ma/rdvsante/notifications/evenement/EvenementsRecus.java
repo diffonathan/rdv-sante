@@ -26,9 +26,24 @@ public final class EvenementsRecus {
     private EvenementsRecus() {
     }
 
+    public static final String TOPIC_PATIENT = "patient.enregistre";
     public static final String TOPIC_RESERVE = "rendezvous.reserve";
     public static final String TOPIC_ANNULE = "rendezvous.annule";
     public static final String TOPIC_FILE = "file.avancee";
+
+    /**
+     * @param creation vrai à la première inscription, faux lors d'une simple
+     *                 mise à jour du dossier. Sans ce drapeau, un patient
+     *                 recevrait un message de bienvenue à chaque réservation.
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record PatientEnregistre(
+            UUID patientId,
+            String nomComplet,
+            String telephone,
+            boolean consentContact,
+            boolean creation) {
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record RendezVousReserve(

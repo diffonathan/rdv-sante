@@ -44,6 +44,31 @@ class EcouteurEvenements {
         this.json = json;
     }
 
+    /**
+     * Un patient vient de s'inscrire.
+     *
+     * <p>Deux refus explicites ici : on ne souhaite pas la bienvenue à chaque
+     * mise à jour du dossier, et on n'écrit jamais à quelqu'un qui n'a pas
+     * consenti — même si l'événement nous parvient.
+     */
+    @KafkaListener(topics = EvenementsRecus.TOPIC_PATIENT)
+    void surPatientEnregistre(@Payload String charge,
+                              @Header(name = EN_TETE_ID, required = false) byte[] enTete) {
+        var e = json.readValue(charge, EvenementsRecus.PatientEnregistre.class);
+        if (!e.creation() || !e.consentContact()) {
+            return;
+        }
+
+        service.enregistrer(
+                cleDe(enTete, EvenementsRecus.TOPIC_PATIENT, charge),
+                EvenementsRecus.TOPIC_PATIENT,
+                Notification.Type.BIENVENUE,
+                e.telephone(),
+                e.nomComplet(),
+                "Bienvenue %s. Votre dossier RDV Santé est créé : vous recevrez ici vos confirmations et rappels."
+                        .formatted(e.nomComplet()));
+    }
+
     @KafkaListener(topics = EvenementsRecus.TOPIC_RESERVE)
     void surReservation(@Payload String charge,
                         @Header(name = EN_TETE_ID, required = false) byte[] enTete) {

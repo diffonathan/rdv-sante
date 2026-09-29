@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 public class Notification {
 
     public enum Type {
+        BIENVENUE,
         CONFIRMATION,
         ANNULATION,
         BIENTOT_VOTRE_TOUR

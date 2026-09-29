@@ -94,10 +94,12 @@ docker compose -f deploy/compose/infra.yml up -d
 # 2. le service rendezvous (jeu de démonstration chargé par le profil dev)
 cd services/rendezvous && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
-# 3. le service notifications, dans un autre terminal
+# 3. les autres services, chacun dans son terminal
+cd services/patients      && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 cd services/notifications && ./mvnw spring-boot:run
+cd services/gateway       && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
-# 4. le front
+# 4. le front (il appelle la passerelle, pas les services)
 cd web && npm install && npm start
 ```
 
@@ -111,7 +113,7 @@ l'interface, **http://localhost:8081/actuator/health** doit répondre `UP` avec
 | **rendezvous** | 8081 | **fonctionnel** — réservation, file d'attente, outbox, SSE |
 | **notifications** | 8083 | **fonctionnel** — consommateurs Kafka idempotents, boîte d'envoi |
 | **gateway** | 8080 | **fonctionnel** — porte d'entrée unique, routage, CORS |
-| patients | 8082 | squelette, pas encore configuré |
+| **patients** | 8082 | **fonctionnel** — inscription idempotente, outbox |
 
 La passerelle expose tout sous un seul port :
 `http://localhost:8080/api/cliniques` atteint `rendezvous`,
@@ -130,9 +132,12 @@ cliquer sur « Appeler le suivant » d'un côté change l'écran de l'autre
 **immédiatement, sans rechargement** — c'est le flux SSE (décision D7).
 
 La boîte d'envoi des notifications se consulte sur
-`http://localhost:8083/api/notifications` : une réservation faite à l'écran y
-apparaît une seconde plus tard, **sans que les deux services se soient parlé
-directement**.
+`http://localhost:8080/api/notifications`. Réserver depuis l'écran y fait
+apparaître **deux** messages une seconde plus tard — une bienvenue et une
+confirmation — produits par deux services différents qui **ne se sont jamais
+parlé directement** : le front a écrit dans `patients` et dans `rendezvous`,
+chacun a déposé un événement dans son outbox, et `notifications` les a
+consommés depuis Kafka.
 
 ### L'API du service rendezvous
 

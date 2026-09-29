@@ -115,32 +115,46 @@
 
     <div class="grille deux">
       <div class="champ">
-        <label for="nom">Nom complet</label>
+        <label for="prenom">Prénom</label>
         <input
-          id="nom"
-          name="nom"
-          [(ngModel)]="nom"
-          [class.fautif]="erreursChamp()['patientNom']"
-          placeholder="Fatima Zahra El Idrissi"
+          id="prenom"
+          name="prenom"
+          [(ngModel)]="prenom"
+          [class.fautif]="erreursChamp()['prenom']"
+          placeholder="Fatima Zahra"
         />
-        @if (erreursChamp()['patientNom']; as m) {
+        @if (erreursChamp()['prenom']; as m) {
           <p class="message-champ">{{ m }}</p>
         }
       </div>
 
       <div class="champ">
-        <label for="tel">Téléphone</label>
+        <label for="nom">Nom</label>
         <input
-          id="tel"
-          name="telephone"
-          [(ngModel)]="telephone"
-          [class.fautif]="erreursChamp()['patientTelephone']"
-          placeholder="0661234567"
+          id="nom"
+          name="nom"
+          [(ngModel)]="nom"
+          [class.fautif]="erreursChamp()['nom']"
+          placeholder="El Idrissi"
         />
-        @if (erreursChamp()['patientTelephone']; as m) {
+        @if (erreursChamp()['nom']; as m) {
           <p class="message-champ">{{ m }}</p>
         }
       </div>
+    </div>
+
+    <div class="champ">
+      <label for="tel">Téléphone</label>
+      <input
+        id="tel"
+        name="telephone"
+        [(ngModel)]="telephone"
+        [class.fautif]="erreursChamp()['telephone'] || erreursChamp()['patientTelephone']"
+        placeholder="0661234567"
+      />
+      @if (erreursChamp()['telephone'] ?? erreursChamp()['patientTelephone']; as m) {
+        <p class="message-champ">{{ m }}</p>
+      }
     </div>
 
     <button class="grand" [disabled]="!peutEnvoyer()" (click)="reserver()">

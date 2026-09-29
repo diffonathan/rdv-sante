@@ -5,6 +5,8 @@ import { catchError } from 'rxjs/operators';
 
 import type {
   Clinique,
+  Inscription,
+  Patient,
   Creneau,
   DemandeReservation,
   EntreeFile,
@@ -53,6 +55,16 @@ export class RdvApi {
     return this.http
       .get<Creneau[]>(`/api/praticiens/${praticienId}/creneaux`, { params: { jour } })
       .pipe(catchError(traduire));
+  }
+
+  /**
+   * Enregistre le patient, ou retrouve celui qui porte déjà ce numéro.
+   *
+   * <p>Le service est idempotent : le front l'appelle avant chaque
+   * réservation sans avoir à savoir si le dossier existe.
+   */
+  enregistrerPatient(demande: Inscription): Observable<Patient> {
+    return this.http.post<Patient>('/api/patients', demande).pipe(catchError(traduire));
   }
 
   /** L'agenda du jour d'une clinique — l'écran du secrétariat. */

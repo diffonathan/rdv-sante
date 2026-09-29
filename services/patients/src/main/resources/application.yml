@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: patients
+
+  datasource:
+    url: ${RDV_DB_URL:jdbc:postgresql://localhost:5432/patients}
+    username: ${RDV_DB_USER:patients_app}
+    password: ${RDV_DB_PASSWORD:patients}
+    hikari:
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: ${RDV_KAFKA:localhost:9092}
+    producer:
+      acks: all
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    ma.rdvsante: DEBUG

@@ -1,9 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { switchMap } from 'rxjs/operators';
 
 import { ErreurApi, RdvApi } from '../../api/rdv-api';
-import { IdentitePatient } from '../../api/identite-patient';
 import type { Clinique, Creneau, Praticien, RendezVous } from '../../api/modeles';
 
 @Component({
@@ -13,7 +13,6 @@ import type { Clinique, Creneau, Praticien, RendezVous } from '../../api/modeles
 })
 export class Reservation {
   private readonly api = inject(RdvApi);
-  private readonly identite = inject(IdentitePatient);
 
   readonly cliniques = signal<Clinique[]>([]);
   readonly praticiens = signal<Praticien[]>([]);
@@ -24,6 +23,7 @@ export class Reservation {
   readonly jour = signal(this.demain());
   readonly creneauChoisi = signal<Creneau | null>(null);
 
+  prenom = '';
   nom = '';
   telephone = '';
 
@@ -50,7 +50,7 @@ export class Reservation {
       },
       error: () =>
         this.erreur.set(
-          'Le service de rendez-vous est injoignable. Vérifiez qu’il est bien démarré.',
+          'Le service est injoignable. Vérifiez que la passerelle et les services sont démarrés.',
         ),
     });
   }
@@ -103,6 +103,15 @@ export class Reservation {
     });
   }
 
+  /**
+   * Deux appels enchaînés : on enregistre le patient, puis on réserve avec
+   * l'identifiant qu'il nous rend.
+   *
+   * <p>Le service « patients » est idempotent sur le numéro de téléphone :
+   * réserver trois fois depuis trois navigateurs ne crée pas trois dossiers.
+   * Le front n'a donc pas à savoir si le patient existe déjà — il demande, et
+   * il reçoit l'identifiant dans les deux cas.
+   */
   reserver(): void {
     const creneau = this.creneauChoisi();
     if (!creneau) {
@@ -113,12 +122,21 @@ export class Reservation {
     this.erreursChamp.set({});
 
     this.api
-      .reserver({
-        creneauId: creneau.id,
-        patientId: this.identite.id,
-        patientNom: this.nom.trim(),
-        patientTelephone: this.telephone.trim(),
+      .enregistrerPatient({
+        nom: this.nom.trim(),
+        prenom: this.prenom.trim(),
+        telephone: this.telephone.trim(),
       })
+      .pipe(
+        switchMap((patient) =>
+          this.api.reserver({
+            creneauId: creneau.id,
+            patientId: patient.id,
+            patientNom: patient.nomComplet,
+            patientTelephone: patient.telephone,
+          }),
+        ),
+      )
       .subscribe({
         next: (rdv) => {
           this.confirmation.set(rdv);
@@ -130,9 +148,9 @@ export class Reservation {
           this.erreursChamp.set(e.erreursDeChamp);
 
           if (e.estConflit) {
-            // Le cas intéressant : quelqu'un a réservé pendant qu'on
-            // remplissait le formulaire. On recharge la liste et on garde la
-            // saisie, pour qu'il suffise de cliquer sur un autre horaire.
+            // Quelqu'un a réservé pendant qu'on remplissait le formulaire. On
+            // recharge la liste et on garde la saisie : il suffit de cliquer
+            // sur un autre horaire.
             this.erreur.set(
               'Ce créneau vient d’être pris par quelqu’un d’autre. En voici d’autres.',
             );

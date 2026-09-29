@@ -6,6 +6,24 @@
  * une centaine de lignes. Au-delà, la génération deviendrait le bon choix.
  */
 
+export interface Patient {
+  id: string;
+  nom: string;
+  prenom: string;
+  nomComplet: string;
+  telephone: string;
+  email: string | null;
+  canalPrefere: string;
+  consentContact: boolean;
+}
+
+export interface Inscription {
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email?: string;
+}
+
 export interface Clinique {
   id: string;
   nom: string;
