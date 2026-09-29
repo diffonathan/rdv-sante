@@ -3,9 +3,13 @@ spring:
     name: notifications
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/notifications
-    username: notifications_app
-    password: notifications
+    # Surchargeables par l'environnement. Les valeurs par défaut sont celles de
+    # deploy/compose/infra.yml : un développeur clone le dépôt et démarre sans
+    # rien configurer. En production, ces trois variables sont fournies par la
+    # plateforme et aucun identifiant ne vit dans le dépôt.
+    url: ${RDV_DB_URL:jdbc:postgresql://localhost:5432/notifications}
+    username: ${RDV_DB_USER:notifications_app}
+    password: ${RDV_DB_PASSWORD:notifications}
     hikari:
       maximum-pool-size: 5
 
@@ -19,7 +23,7 @@ spring:
     locations: classpath:db/migration
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${RDV_KAFKA:localhost:9092}
     consumer:
       group-id: notifications
       # earliest : au premier démarrage, le service rattrape tout l'historique

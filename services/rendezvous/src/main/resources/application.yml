@@ -3,9 +3,13 @@ spring:
     name: rendezvous
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/rendezvous
-    username: rendezvous_app
-    password: rendezvous
+    # Surchargeables par l'environnement. Les valeurs par défaut sont celles de
+    # deploy/compose/infra.yml : un développeur clone le dépôt et démarre sans
+    # rien configurer. En production, ces trois variables sont fournies par la
+    # plateforme et aucun identifiant ne vit dans le dépôt.
+    url: ${RDV_DB_URL:jdbc:postgresql://localhost:5432/rendezvous}
+    username: ${RDV_DB_USER:rendezvous_app}
+    password: ${RDV_DB_PASSWORD:rendezvous}
     hikari:
       # Un service qui garde dix connexions ouvertes pour rien, multiplié par
       # trois services, épuise le pool par défaut de PostgreSQL (100) dès qu'on
@@ -29,7 +33,7 @@ spring:
     locations: classpath:db/migration
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${RDV_KAFKA:localhost:9092}
     producer:
       # « all » : le message n'est acquitté qu'une fois répliqué. Sur un seul
       # courtier en développement cela ne change rien, mais le code ne doit pas
