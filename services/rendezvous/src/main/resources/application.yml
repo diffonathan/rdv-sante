@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: rendezvous
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rendezvous
+    username: rendezvous_app
+    password: rendezvous
+    hikari:
+      # Un service qui garde dix connexions ouvertes pour rien, multiplié par
+      # trois services, épuise le pool par défaut de PostgreSQL (100) dès qu'on
+      # lance plusieurs instances. Cinq suffisent largement en développement.
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      # Jamais « update » : c'est Flyway qui fait foi sur le schéma. Hibernate
+      # se contente de vérifier que les entités correspondent à ce que Flyway a
+      # créé, et refuse de démarrer sinon — l'erreur arrive au lancement, pas
+      # à la première requête en production.
+      ddl-auto: validate
+    # Ferme la session à la sortie du service, pas à la fin de la réponse HTTP :
+    # sans cela, un chargement paresseux réussit par accident dans la vue et
+    # échoue dans un test.
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      # « all » : le message n'est acquitté qu'une fois répliqué. Sur un seul
+      # courtier en développement cela ne change rien, mais le code ne doit pas
+      # dépendre d'un réglage plus permissif qu'en production.
+      acks: all
+    consumer:
+      group-id: rendezvous
+      auto-offset-reset: earliest
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    # Rend visibles l'état de la base ET celui de Kafka dans /actuator/health.
+    db:
+      enabled: true
+
+---
+# Profil de développement : pas de fournisseur d'identité à lancer pour
+# travailler sur le métier. Keycloak n'entre en jeu que dans le profil complet.
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    ma.rdvsante: DEBUG
+    org.hibernate.SQL: DEBUG

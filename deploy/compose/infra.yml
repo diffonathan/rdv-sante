@@ -1,0 +1,69 @@
+# Infrastructure de développement : PostgreSQL + Kafka.
+#
+# Kafka tourne en mode KRaft — pas de Zookeeper : un conteneur de moins et
+# environ 300 Mo économisés (décision D6). Les deux conteneurs sont plafonnés
+# en mémoire : sur une machine de 16 Go où le navigateur en prend déjà 3, un
+# Kafka qui s'octroie 1 Go de tas fait tomber le reste.
+#
+#   docker compose -f deploy/compose/infra.yml up -d
+#   docker compose -f deploy/compose/infra.yml down        (garde les données)
+#   docker compose -f deploy/compose/infra.yml down -v     (efface tout)
+
+name: rdv-sante
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: rdv-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Le script ne s'exécute qu'à la PREMIÈRE création du volume.
+      # Après un changement, il faut « down -v » pour qu'il soit rejoué.
+      - ./init-bases.sql:/docker-entrypoint-initdb.d/10-bases.sql:ro
+      - pg-donnees:/var/lib/postgresql/data
+    mem_limit: 320m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  kafka:
+    image: apache/kafka:4.1.0
+    container_name: rdv-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"
+      # Un seul courtier en développement : pas de réplication possible.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      # Sans ce zéro, le premier consommateur attend 3 secondes à chaque
+      # démarrage — insupportable quand on relance le service vingt fois.
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xmx320m -Xms160m"
+    mem_limit: 640m
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 8s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  pg-donnees:

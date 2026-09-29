@@ -76,31 +76,47 @@ de prendre des rendez-vous.
 
 ### Prérequis
 
-- JDK 21 (`java -version` doit afficher 21)
-- Docker Desktop (PostgreSQL, Kafka et Keycloak tournent en conteneurs)
-- Node 22 ou 24 pour le front
+- **JDK 21** — `java -version` doit afficher 21
+- **Docker Desktop** démarré — PostgreSQL et Kafka tournent en conteneurs
 
 ### Lancer
 
 ```bash
-# 1. l'infrastructure : PostgreSQL, Kafka, Keycloak
+# 1. l'infrastructure : PostgreSQL (3 bases) + Kafka en mode KRaft
 docker compose -f deploy/compose/infra.yml up -d
 
-# 2. un service (depuis son dossier)
-cd services/rendezvous && ./mvnw spring-boot:run
-
-# 3. le front
-cd web && npm install && npm start
+# 2. le service rendezvous
+cd services/rendezvous && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-### Profil léger
+Puis ouvrir **http://localhost:8081/actuator/health** : l'état doit être `UP`,
+avec `db` et `kafka` détaillés. C'est la preuve que la chaîne complète répond.
 
-La pile complète demande 6 à 8 Go de mémoire. Pour développer au quotidien,
-`deploy/compose/infra-legere.yml` ne lance que PostgreSQL et Kafka, et les
-services démarrent avec le profil `dev` (sécurité désactivée, jeu de données
-préchargé).
+| Service | Port | État |
+|---|---|---|
+| rendezvous | 8081 | démarre, migration Flyway appliquée |
+| patients | 8082 | squelette, pas encore configuré |
+| notifications | 8083 | squelette, pas encore configuré |
+| gateway | 8080 | squelette, pas encore configuré |
+| front Angular | 4200 | **pas encore créé** |
 
----
+### Arrêter
+
+```bash
+docker compose -f deploy/compose/infra.yml down      # garde les données
+docker compose -f deploy/compose/infra.yml down -v   # efface tout
+```
+
+> **Piège connu.** `mvnw spring-boot:run` lance une JVM *séparée* du processus
+> Maven. Fermer le terminal ne la tue pas toujours, et le prochain lancement
+> échoue sur « Port 8081 was already in use ». Pour la trouver :
+> `netstat -ano | findstr :8081`, puis `taskkill /PID <pid> /F`.
+
+### Mémoire
+
+L'infrastructure est plafonnée : 320 Mo pour PostgreSQL, 640 Mo pour Kafka, et
+WSL2 est limité à 5 Go par `~/.wslconfig`. Sur une machine de 16 Go où le
+navigateur en prend 3, ces plafonds ne sont pas un luxe.
 
 ## Tests
 
