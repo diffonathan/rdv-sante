@@ -4,12 +4,13 @@
    Source de vérité : fundamental-analysis/src/index.css. Les jetons sont
    recopiés à l'identique, pas réinterprétés.
 
-   Quatre rôles de couleur, et seulement quatre :
-     bleu  #0781FE → l'action (boutons, liens, sélection)
+   Trois rôles de couleur, et seulement trois :
+     vert  #00B67A → la marque, l'action, l'état favorable
      or    #F9A825 → la valeur (un rang, un décompte, un horaire retenu)
-     vert  #00B67A → l'état favorable (patient appelé, confirmation)
      rouge #ef4444 → l'erreur
-   Aucun orange : l'or tient déjà le rôle « neutre / attention ».
+   Le VERT et non le bleu : c'est un produit de santé, et le bleu appartient
+   à la charte ConfluenceTerminal. Aucun orange : l'or tient déjà le rôle
+   « neutre / attention ».
    Azeret Mono est réservé aux NOMBRES — jamais au texte courant.
 ============================================================================ */
 
@@ -28,7 +29,7 @@
   --glass-bg: rgba(19, 19, 21, 0.55);
   --glass-bg-strong: rgba(19, 19, 21, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(7, 129, 254, 0.35);
+  --glass-border-hover: rgba(0, 182, 122, 0.35);
   --glass-edge: rgba(255, 255, 255, 0.1);
   --glass-blur: 12px;
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -36,15 +37,18 @@
   --border: rgba(255, 255, 255, 0.06);
   --border-med: rgba(255, 255, 255, 0.1);
 
-  --blue: #0781fe;
-  --accent-soft: rgba(7, 129, 254, 0.1);
-  --accent-border: rgba(7, 129, 254, 0.28);
-  --accent-glow: rgba(7, 129, 254, 0.18);
+  /* Accent de marque : le vert terminal. « --blue » a disparu du projet. */
+  --vert: #00b67a;
+  --vert-clair: #00c88a;
+  --vert-sombre: #068a5c;
+  --accent-soft: rgba(0, 182, 122, 0.1);
+  --accent-border: rgba(0, 182, 122, 0.3);
+  --accent-glow: rgba(0, 182, 122, 0.22);
 
   --gold: #f9a825;
   --gold-soft: rgba(249, 168, 37, 0.15);
 
-  --green: #00b67a;
+  --green: var(--vert);
   --green-soft: rgba(0, 182, 122, 0.14);
   --red: #ef4444;
   --red-soft: rgba(239, 68, 68, 0.14);
@@ -161,7 +165,7 @@ code {
 
 /* Le monogramme porte l'arête bleu → or de la charte, à dose homéopathique. */
 .marque span {
-  background: linear-gradient(150deg, var(--blue) 0%, #0b5cd5 55%, var(--gold) 190%);
+  background: linear-gradient(150deg, var(--vert-clair) 0%, var(--vert-sombre) 100%);
   border-radius: 9px;
   box-shadow: 0 0 18px var(--accent-glow);
   color: #fff;
@@ -198,7 +202,7 @@ nav a:hover {
 nav a.actif {
   background: var(--accent-soft);
   border-color: var(--accent-border);
-  color: #6db4ff;
+  color: var(--vert-clair);
 }
 
 main {
@@ -254,7 +258,7 @@ main {
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
   border-radius: 999px;
-  color: #6db4ff;
+  color: var(--vert-clair);
   display: grid;
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -266,8 +270,8 @@ main {
 /* -------------------------------------------------------------- Contrôles */
 
 button {
-  background: var(--blue);
-  border: 1px solid var(--blue);
+  background: var(--vert);
+  border: 1px solid var(--vert);
   border-radius: 9px;
   color: #fff;
   cursor: pointer;
@@ -389,12 +393,12 @@ label {
   background: var(--accent-soft);
   border-color: var(--accent-border);
   box-shadow: none;
-  color: #6db4ff;
+  color: var(--vert-clair);
 }
 
 .creneaux button.choisi {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--vert);
+  border-color: var(--vert);
   box-shadow: 0 0 20px var(--accent-glow);
   color: #fff;
 }
@@ -509,7 +513,7 @@ label {
 .alerte.info {
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
-  color: #6db4ff;
+  color: var(--vert-clair);
 }
 
 .vide {
@@ -642,4 +646,294 @@ label {
   height: 36px;
   place-items: center;
   width: 36px;
+}
+
+/* ------------------------------------------------- Visite guidée et aide */
+
+.voile {
+  align-items: center;
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 100;
+}
+
+.visite {
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+  max-height: 88dvh;
+  max-width: 620px;
+  outline: none;
+  overflow-y: auto;
+  padding: 26px;
+  width: 100%;
+}
+
+.visite-entete {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.visite-compteur {
+  color: var(--vert-clair);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.visite h2 {
+  font-size: 1.45rem;
+  margin-bottom: 14px;
+}
+
+.visite-texte {
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+
+/* L'essentiel à retenir : une seule phrase, mise à part pour qu'elle survive
+   à une lecture en diagonale. */
+.visite-retenir {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--vert);
+  border-radius: 0;
+  color: var(--text);
+  font-size: 0.92rem;
+  margin: 16px 0 0;
+  padding: 12px 14px;
+}
+
+.visite-pied {
+  align-items: center;
+  border-top: 1px solid var(--border-med);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding-top: 18px;
+}
+
+.visite-points {
+  display: flex;
+  gap: 7px;
+}
+
+.point {
+  background: var(--border-med);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 7px;
+  padding: 0;
+  transition: all 0.2s var(--ease);
+  width: 7px;
+}
+
+.point:hover {
+  background: var(--text-dim);
+  box-shadow: none;
+  transform: none;
+}
+
+.point.actif {
+  background: var(--vert);
+  width: 22px;
+}
+
+.visite-boutons {
+  display: flex;
+  gap: 8px;
+}
+
+.bouton-aide {
+  margin-left: auto;
+  padding: 7px 14px;
+}
+
+.aide {
+  margin-bottom: 18px;
+}
+
+.aide-bascule {
+  background: transparent;
+  border-color: var(--border-med);
+  color: var(--text-muted);
+  font-size: 0.83rem;
+  padding: 6px 13px;
+}
+
+.aide-bascule:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  box-shadow: none;
+  color: var(--vert-clair);
+  transform: none;
+}
+
+.aide-corps {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--rayon);
+  margin-top: 10px;
+  padding: 14px 16px;
+}
+
+.aide-corps p {
+  color: var(--text-muted);
+  font-size: 0.89rem;
+  margin: 0 0 8px;
+}
+
+.aide-corps p:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------ Page « technique » */
+
+.titre-section {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  margin: 28px 0 14px;
+}
+
+.chiffres {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.chiffre {
+  padding: 18px;
+  text-align: center;
+}
+
+.chiffre b {
+  color: var(--gold);
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.chiffre span {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+
+.texte-doux {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.services {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin: 16px 0;
+}
+
+.service {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-med);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.service code {
+  color: var(--vert-clair);
+  font-weight: 600;
+}
+
+.service .port {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  margin-left: 5px;
+}
+
+.service p {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin: 5px 0 0;
+}
+
+.flux {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 2;
+  margin: 0;
+  padding: 14px;
+}
+
+.flux em {
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.flux span {
+  color: var(--text-dim);
+  padding: 0 4px;
+}
+
+.difficulte h3 {
+  font-size: 1.02rem;
+  margin-bottom: 14px;
+}
+
+.etiquette-ligne {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  margin: 14px 0 5px;
+  text-transform: uppercase;
+}
+
+.etiquette-ligne.verte {
+  color: var(--vert-clair);
+}
+
+.preuve {
+  background: var(--gold-soft);
+  border-left: 3px solid var(--gold);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 16px 0 0;
+  padding: 11px 13px;
+}
+
+.pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.pastilles li {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-med);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.79rem;
+  padding: 4px 11px;
 }

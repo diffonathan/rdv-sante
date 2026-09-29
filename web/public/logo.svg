@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="RDV Santé">
+  <title>RDV Santé</title>
+  <desc>Croix médicale entourée d'un arc de progression : le soin, et l'attente qui avance.</desc>
+
+  <defs>
+    <!-- Vert #00B67A de la charte, en dégradé léger pour donner du volume.
+         Le vert plutôt que le bleu : c'est un produit de santé. -->
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00C88A"/>
+      <stop offset="1" stop-color="#068A5C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="15" fill="url(#fond)"/>
+
+  <!-- L'arc or : la file qui avance. Il ne boucle pas — l'ouverture dit que
+       le tour suivant reste à venir. 300° sur 360 : dasharray 104.7 sur une
+       circonférence de 125.66. -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#F9A825" stroke-width="4"
+          stroke-linecap="round" stroke-dasharray="104.7 125.66"
+          transform="rotate(-120 32 32)"/>
+
+  <!-- La croix : deux barres seulement, arrondies, épaisses. À 16 px elle
+       doit rester lisible, donc aucun détail interne. -->
+  <g fill="#FFFFFF">
+    <rect x="21" y="29" width="22" height="6" rx="3"/>
+    <rect x="29" y="21" width="6" height="22" rx="3"/>
+  </g>
+</svg>

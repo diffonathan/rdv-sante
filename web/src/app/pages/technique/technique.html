@@ -1,0 +1,82 @@
+<div class="entete-page">
+  <h1>Sous le capot</h1>
+  <p>
+    Ce que cette application m’a demandé de construire, et avec quoi. Écrit pour
+    être lu sans être développeur.
+  </p>
+</div>
+
+<h2 class="titre-section">Les technologies utilisées</h2>
+
+<div class="grille deux">
+  @for (t of technologies; track t.groupe) {
+    <div class="carte">
+      <h3>{{ t.groupe }}</h3>
+      <ul class="pastilles">
+        @for (i of t.items; track i) {
+          <li>{{ i }}</li>
+        }
+      </ul>
+    </div>
+  }
+</div>
+
+<div class="chiffres" style="margin-top: 16px">
+  @for (c of chiffres; track c.libelle) {
+    <div class="carte chiffre">
+      <b>{{ c.valeur }}</b>
+      <span>{{ c.libelle }}</span>
+    </div>
+  }
+</div>
+
+<h2 class="titre-section">Comment c’est organisé</h2>
+
+<div class="carte">
+  <p class="texte-doux">
+    L’application n’est pas un bloc unique : c’est quatre programmes séparés, qui
+    tournent chacun de leur côté et se passent des messages. L’intérêt est
+    concret — si celui qui envoie les rappels s’arrête, on continue de prendre
+    des rendez-vous, et il rattrape son retard à son retour.
+  </p>
+
+  <div class="services">
+    @for (s of services; track s.nom) {
+      <div class="service">
+        <code>{{ s.nom }}</code>
+        <p>{{ s.role }}</p>
+      </div>
+    }
+  </div>
+</div>
+
+<h2 class="titre-section">Ce qui était difficile</h2>
+
+<div class="grille">
+  @for (d of defis; track d.titre) {
+    <div class="carte difficulte">
+      <h3>{{ d.titre }}</h3>
+
+      <p class="etiquette-ligne">La situation</p>
+      <p class="texte-doux">{{ d.situation }}</p>
+
+      <p class="etiquette-ligne verte">Ce que j’ai fait</p>
+      <p class="texte-doux">{{ d.reponse }}</p>
+    </div>
+  }
+</div>
+
+<div class="carte" style="margin-top: 22px">
+  <h2>Le code est public</h2>
+  <p class="texte-doux">
+    Tout est sur GitHub, avec les tests et la vérification automatique qui se
+    lance à chaque modification. Les choix techniques y sont expliqués un par
+    un — y compris ceux qui se sont révélés être des erreurs, et comment je les
+    ai corrigés.
+  </p>
+  <p>
+    <a [href]="depot" target="_blank" rel="noopener noreferrer">
+      github.com/diffonathan/rdv-sante
+    </a>
+  </p>
+</div>

@@ -41,6 +41,14 @@
     <p>Choisissez un praticien et un horaire. La confirmation est immédiate.</p>
   </div>
 
+  <aide-ecran
+    [lignes]="[
+      'Choisissez d’abord la clinique et le praticien, puis le jour. Seuls les horaires encore libres apparaissent.',
+      'Cliquez sur un horaire, renseignez vos coordonnées, et validez. Vous recevez la confirmation tout de suite.',
+      'Si quelqu’un réserve le même horaire pendant que vous remplissez le formulaire, on vous le dit et on vous propose les créneaux restants — votre saisie est conservée.'
+    ]"
+  />
+
   @if (erreur()) {
     <div class="alerte erreur">{{ erreur() }}</div>
   }

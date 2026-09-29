@@ -1,0 +1,51 @@
+@if (ouverte()) {
+  <div class="voile" (click)="fermer()">
+    <div
+      class="visite"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="visite-titre"
+      tabindex="-1"
+      (click)="$event.stopPropagation()"
+      (keydown)="surTouche($event)"
+    >
+      <div class="visite-entete">
+        <p class="visite-compteur">
+          Étape {{ index() + 1 }} sur {{ etapes.length }}
+        </p>
+        <button class="discret" (click)="fermer()" aria-label="Fermer la visite">Fermer</button>
+      </div>
+
+      <h2 id="visite-titre">{{ etape().titre }}</h2>
+
+      @for (paragraphe of etape().paragraphes; track paragraphe) {
+        <p class="visite-texte">{{ paragraphe }}</p>
+      }
+
+      @if (etape().aRetenir; as retenir) {
+        <p class="visite-retenir">{{ retenir }}</p>
+      }
+
+      <div class="visite-pied">
+        <div class="visite-points" role="tablist" aria-label="Étapes de la visite">
+          @for (e of etapes; track e.titre; let i = $index) {
+            <button
+              class="point"
+              [class.actif]="i === index()"
+              [attr.aria-label]="'Aller à l’étape ' + (i + 1) + ' : ' + e.titre"
+              [attr.aria-current]="i === index() ? 'step' : null"
+              (click)="allerA(i)"
+            ></button>
+          }
+        </div>
+
+        <div class="visite-boutons">
+          <button class="discret" [disabled]="premiere()" (click)="precedent()">Précédent</button>
+          <button (click)="suivant()">
+            {{ derniere() ? 'Terminer' : 'Suivant' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

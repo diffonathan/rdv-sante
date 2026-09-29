@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
 
 /**
- * Trois écrans, trois publics : le patient qui réserve, le secrétariat qui
- * pilote la journée, et l'écran affiché dans la salle d'attente.
+ * Quatre écrans, quatre publics : le patient qui réserve, le secrétariat qui
+ * pilote la journée, l'écran de la salle d'attente, et le lecteur technique.
  *
  * Chargement différé : l'écran de salle d'attente tourne sur une télévision
  * qu'on n'éteint jamais, il n'a aucune raison d'embarquer le formulaire de
- * réservation.
+ * réservation ni la page d'architecture.
  */
 export const routes: Routes = [
   {
@@ -24,6 +24,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/salle-attente/salle-attente').then((m) => m.SalleAttente),
     title: 'Salle d’attente — RDV Santé',
+  },
+  {
+    path: 'technique',
+    loadComponent: () => import('./pages/technique/technique').then((m) => m.Technique),
+    title: 'Sous le capot — RDV Santé',
   },
   { path: '**', redirectTo: '' },
 ];

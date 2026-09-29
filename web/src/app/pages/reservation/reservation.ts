@@ -3,12 +3,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { switchMap } from 'rxjs/operators';
 
+import { AideEcran } from '../../aide/aide-ecran';
 import { ErreurApi, RdvApi } from '../../api/rdv-api';
 import type { Clinique, Creneau, Praticien, RendezVous } from '../../api/modeles';
 
 @Component({
   selector: 'page-reservation',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, AideEcran],
   templateUrl: './reservation.html',
 })
 export class Reservation {

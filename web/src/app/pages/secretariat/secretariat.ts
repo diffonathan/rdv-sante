@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 
+import { AideEcran } from '../../aide/aide-ecran';
 import { ErreurApi, RdvApi } from '../../api/rdv-api';
 import type { Clinique, RendezVous } from '../../api/modeles';
 
@@ -8,7 +9,7 @@ type Abonnement = ReturnType<RdvApi['suivreFile']>;
 
 @Component({
   selector: 'page-secretariat',
-  imports: [DatePipe],
+  imports: [DatePipe, AideEcran],
   templateUrl: './secretariat.html',
 })
 export class Secretariat implements OnDestroy {
