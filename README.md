@@ -110,8 +110,12 @@ l'interface, **http://localhost:8081/actuator/health** doit répondre `UP` avec
 | **web** (Angular 22) | 4200 | **les trois écrans** — réservation, secrétariat, salle d'attente |
 | **rendezvous** | 8081 | **fonctionnel** — réservation, file d'attente, outbox, SSE |
 | **notifications** | 8083 | **fonctionnel** — consommateurs Kafka idempotents, boîte d'envoi |
+| **gateway** | 8080 | **fonctionnel** — porte d'entrée unique, routage, CORS |
 | patients | 8082 | squelette, pas encore configuré |
-| gateway | 8080 | squelette, pas encore configuré |
+
+La passerelle expose tout sous un seul port :
+`http://localhost:8080/api/cliniques` atteint `rendezvous`,
+`http://localhost:8080/api/notifications` atteint `notifications`.
 
 ### Les trois écrans
 

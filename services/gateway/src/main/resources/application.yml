@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Les routes sont déclarées ici plutôt que découvertes : avec quatre
+          # services connus, un annuaire (Eureka, Consul) ajouterait un
+          # composant à exploiter sans rien résoudre. Il deviendra utile le
+          # jour où les instances seront éphémères.
+          routes:
+            - id: rendezvous
+              uri: ${RDV_URI_RENDEZVOUS:http://localhost:8081}
+              predicates:
+                - Path=/api/cliniques/**, /api/praticiens/**, /api/rendez-vous/**
+
+            - id: patients
+              uri: ${RDV_URI_PATIENTS:http://localhost:8082}
+              predicates:
+                - Path=/api/patients/**
+
+            - id: notifications
+              uri: ${RDV_URI_NOTIFICATIONS:http://localhost:8083}
+              predicates:
+                - Path=/api/notifications/**
+
+          # Le flux SSE de la file d'attente passe par ici : il reste ouvert
+          # des heures. On ne fixe donc AUCUN response-timeout — le défaut de
+          # Spring Cloud Gateway est déjà l'absence de délai.
+          #
+          # Piège : « response-timeout: 0 » ne désactive rien, il impose un
+          # délai de zéro milliseconde. Toutes les routes répondaient 504.
+          httpclient:
+            connect-timeout: 3000
+
+      # Le navigateur appelle la passerelle depuis le port 4200 en
+      # développement. En production, front et API sont servis sous la même
+      # origine et cette section devient inutile.
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: ${RDV_ORIGINES:http://localhost:4200}
+            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedHeaders: '*'
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+
+---
+# Profil de développement : aucun jeton exigé, comme pour les services.
+# Keycloak n'entre en jeu que dans le profil complet.
+spring:
+  config:
+    activate:
+      on-profile: dev
