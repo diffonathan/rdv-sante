@@ -1,0 +1,19 @@
+# Java / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.jar.original
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Outils
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Secrets et variables locales
+.env
+*.local
