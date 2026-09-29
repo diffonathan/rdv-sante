@@ -14,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ma.rdvsante.rendezvous.depot.DepotClinique;
 import ma.rdvsante.rendezvous.depot.DepotCreneau;
 import ma.rdvsante.rendezvous.depot.DepotPraticien;
+import ma.rdvsante.rendezvous.depot.DepotRendezVous;
 import ma.rdvsante.rendezvous.domaine.Clinique;
 import ma.rdvsante.rendezvous.domaine.Creneau;
 import ma.rdvsante.rendezvous.domaine.Praticien;
+import ma.rdvsante.rendezvous.domaine.RendezVous;
 import ma.rdvsante.rendezvous.domaine.StatutRendezVous;
 
 /** Lecture seule : ce qu'on propose au patient avant qu'il réserve. */
@@ -29,13 +31,16 @@ public class ServiceCatalogue {
     private final DepotClinique depotClinique;
     private final DepotPraticien depotPraticien;
     private final DepotCreneau depotCreneau;
+    private final DepotRendezVous depotRendezVous;
     private final Clock horloge;
 
     public ServiceCatalogue(DepotClinique depotClinique, DepotPraticien depotPraticien,
-                            DepotCreneau depotCreneau, Clock horloge) {
+                            DepotCreneau depotCreneau, DepotRendezVous depotRendezVous,
+                            Clock horloge) {
         this.depotClinique = depotClinique;
         this.depotPraticien = depotPraticien;
         this.depotCreneau = depotCreneau;
+        this.depotRendezVous = depotRendezVous;
         this.horloge = horloge;
     }
 
@@ -78,6 +83,16 @@ public class ServiceCatalogue {
         }
 
         return depotCreneau.libres(praticienId, borneBasse, finJour, StatutRendezVous.ANNULE);
+    }
+
+    /** L'agenda d'une clinique pour un jour, en heure du Maroc. */
+    @Transactional(readOnly = true)
+    public List<RendezVous> agenda(UUID cliniqueId, LocalDate jour) {
+        return depotRendezVous.agendaDuJour(
+                cliniqueId,
+                jour.atStartOfDay(FUSEAU).toInstant(),
+                jour.plusDays(1).atStartOfDay(FUSEAU).toInstant(),
+                StatutRendezVous.ANNULE);
     }
 
     /** Fenêtre par défaut proposée à l'écran : aujourd'hui et les 13 jours suivants. */

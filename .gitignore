@@ -17,3 +17,7 @@ dist/
 # Secrets et variables locales
 .env
 *.local
+
+# Angular
+web/.angular/
+web/dist/

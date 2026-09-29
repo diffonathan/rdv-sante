@@ -1,0 +1,55 @@
+<div class="salle">
+  <div style="align-items: flex-start; display: flex; gap: 20px; justify-content: space-between">
+    <div>
+      <h1>{{ cliniqueNom() || 'Salle d’attente' }}</h1>
+      <p class="sous">
+        @if (file(); as f) {
+          {{ f.nombreEnAttente }} personne(s) en attente
+        } @else {
+          Connexion au flux…
+        }
+      </p>
+    </div>
+
+    <select
+      [value]="cliniqueId()"
+      (change)="choisirClinique($any($event.target).value)"
+      style="max-width: 250px"
+    >
+      @for (c of cliniques(); track c.id) {
+        <option [value]="c.id">{{ c.nom }}</option>
+      }
+    </select>
+  </div>
+
+  @if (fluxCoupe()) {
+    <p style="margin-top: 16px">
+      <span class="etiquette hors-ligne">Connexion interrompue — reconnexion en cours</span>
+    </p>
+  }
+
+  @if (appele(); as a) {
+    <div class="appel">
+      <small>Au tour de</small>
+      <strong>{{ a.patientNom }}</strong>
+      <span class="praticien">{{ a.praticienNom }}</span>
+    </div>
+  } @else {
+    <div class="appel repos">
+      <small>Aucun appel en cours</small>
+      <strong style="font-size: 1.7rem">Patientez, merci</strong>
+    </div>
+  }
+
+  @if (suivants().length) {
+    <p class="titre-suite">Ensuite</p>
+    <div class="suite">
+      @for (e of suivants(); track e.id) {
+        <div>
+          <span>{{ e.rang }}</span>
+          {{ e.patientNom }}
+        </div>
+      }
+    </div>
+  }
+</div>

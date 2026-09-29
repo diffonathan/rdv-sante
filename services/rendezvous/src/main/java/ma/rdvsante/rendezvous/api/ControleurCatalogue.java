@@ -39,6 +39,17 @@ class ControleurCatalogue {
         return catalogue.praticiens(id).stream().map(Vues.PraticienVue::de).toList();
     }
 
+    /** L'agenda du jour d'une clinique : ce que le secrétariat pointe. */
+    @GetMapping("/cliniques/{id}/rendez-vous")
+    List<Vues.RendezVousVue> agenda(
+            @PathVariable UUID id,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate jour) {
+
+        LocalDate cible = jour != null ? jour : LocalDate.now();
+        return catalogue.agenda(id, cible).stream().map(Vues.RendezVousVue::de).toList();
+    }
+
     /**
      * Les créneaux encore libres d'un praticien, pour un jour donné.
      *

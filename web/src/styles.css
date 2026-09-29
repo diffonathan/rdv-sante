@@ -1,0 +1,645 @@
+/* ============================================================================
+   RDV Santé — charte Hope Traders / ConfluenceTerminal.
+   ----------------------------------------------------------------------------
+   Source de vérité : fundamental-analysis/src/index.css. Les jetons sont
+   recopiés à l'identique, pas réinterprétés.
+
+   Quatre rôles de couleur, et seulement quatre :
+     bleu  #0781FE → l'action (boutons, liens, sélection)
+     or    #F9A825 → la valeur (un rang, un décompte, un horaire retenu)
+     vert  #00B67A → l'état favorable (patient appelé, confirmation)
+     rouge #ef4444 → l'erreur
+   Aucun orange : l'or tient déjà le rôle « neutre / attention ».
+   Azeret Mono est réservé aux NOMBRES — jamais au texte courant.
+============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap');
+
+:root {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Azeret Mono', ui-monospace, 'Fira Code', monospace;
+
+  --bg: #0a0a0c;
+  --fond-charte:
+    radial-gradient(88% 62% at 12% 0%, rgba(7, 129, 254, 0.14), transparent 62%),
+    radial-gradient(76% 56% at 88% 100%, rgba(249, 168, 37, 0.11), transparent 62%),
+    linear-gradient(160deg, #101014 0%, #0a0a0c 60%, #08080a 100%);
+
+  --glass-bg: rgba(19, 19, 21, 0.55);
+  --glass-bg-strong: rgba(19, 19, 21, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(7, 129, 254, 0.35);
+  --glass-edge: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+  --border: rgba(255, 255, 255, 0.06);
+  --border-med: rgba(255, 255, 255, 0.1);
+
+  --blue: #0781fe;
+  --accent-soft: rgba(7, 129, 254, 0.1);
+  --accent-border: rgba(7, 129, 254, 0.28);
+  --accent-glow: rgba(7, 129, 254, 0.18);
+
+  --gold: #f9a825;
+  --gold-soft: rgba(249, 168, 37, 0.15);
+
+  --green: #00b67a;
+  --green-soft: rgba(0, 182, 122, 0.14);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.14);
+
+  --text: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-muted: #b1b1b1;
+  --text-dim: #63636a;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rayon: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Le fond de charte est fixé sur le pseudo-élément : il ne défile pas avec le
+   contenu, et les halos restent à leur place. */
+body::before {
+  background: var(--fond-charte);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.1rem;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 0.9rem;
+  font-weight: 620;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* --------------------------------------------------------------- Structure */
+
+.note-demo {
+  background: var(--gold-soft);
+  border-bottom: 1px solid rgba(249, 168, 37, 0.22);
+  color: var(--gold);
+  font-size: 0.8rem;
+  padding: 7px 20px;
+  text-align: center;
+}
+
+.bandeau {
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  background: rgba(10, 10, 12, 0.72);
+  border-bottom: 1px solid var(--border-med);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.bandeau-contenu {
+  align-items: center;
+  display: flex;
+  gap: 28px;
+  margin: 0 auto;
+  max-width: 1120px;
+  min-height: 62px;
+  padding: 0 20px;
+}
+
+.marque {
+  align-items: center;
+  color: var(--text);
+  display: flex;
+  font-weight: 700;
+  gap: 10px;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+/* Le monogramme porte l'arête bleu → or de la charte, à dose homéopathique. */
+.marque span {
+  background: linear-gradient(150deg, var(--blue) 0%, #0b5cd5 55%, var(--gold) 190%);
+  border-radius: 9px;
+  box-shadow: 0 0 18px var(--accent-glow);
+  color: #fff;
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 800;
+  height: 30px;
+  letter-spacing: 0;
+  place-items: center;
+  width: 30px;
+}
+
+nav {
+  display: flex;
+  gap: 2px;
+}
+
+nav a {
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 7px 13px;
+  text-decoration: none;
+  transition: all 0.2s var(--ease);
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+nav a.actif {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: #6db4ff;
+}
+
+main {
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 30px 20px 64px;
+  position: relative;
+}
+
+.entete-page {
+  margin-bottom: 24px;
+}
+
+.entete-page p {
+  color: var(--text-muted);
+  margin: 7px 0 0;
+}
+
+/* ------------------------------------------------------------------ Verre */
+
+.carte {
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--rayon);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+  padding: 22px;
+}
+
+.grille {
+  display: grid;
+  gap: 16px;
+}
+
+.grille.deux {
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+}
+
+.etape-titre {
+  align-items: center;
+  color: var(--text-dim);
+  display: flex;
+  font-size: 0.72rem;
+  font-weight: 650;
+  gap: 9px;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.etape-titre b {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  color: #6db4ff;
+  display: grid;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  height: 21px;
+  place-items: center;
+  width: 21px;
+}
+
+/* -------------------------------------------------------------- Contrôles */
+
+button {
+  background: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 9px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 9px 17px;
+  transition: all 0.2s var(--ease);
+}
+
+button:hover:not(:disabled) {
+  box-shadow: 0 0 22px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+button.discret {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-med);
+  color: var(--text-secondary);
+}
+
+button.discret:hover:not(:disabled) {
+  border-color: var(--glass-border-hover);
+  box-shadow: none;
+  color: var(--text);
+}
+
+button.grand {
+  font-size: 1rem;
+  padding: 13px 22px;
+  width: 100%;
+}
+
+input,
+select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-med);
+  border-radius: 9px;
+  color: var(--text);
+  font: inherit;
+  padding: 10px 12px;
+  transition: border-color 0.2s var(--ease);
+  width: 100%;
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
+input.fautif {
+  border-color: var(--red);
+}
+
+/* Le sélecteur natif : le chevron est peint en fond, donc « background »
+   en raccourci l'effacerait. On ne touche qu'à background-color. */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23b1b1b1' stroke-width='1.6'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 11px center;
+  background-repeat: no-repeat;
+  background-size: 15px;
+  padding-right: 34px;
+}
+
+select option {
+  background: #131315;
+  color: var(--text-secondary);
+}
+
+label {
+  color: var(--text-muted);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 560;
+  margin-bottom: 6px;
+}
+
+.champ {
+  margin-bottom: 15px;
+}
+
+.message-champ {
+  color: var(--red);
+  font-size: 0.79rem;
+  margin: 5px 0 0;
+}
+
+/* --------------------------------------------------------------- Créneaux */
+
+.creneaux {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+}
+
+/* Un horaire est un NOMBRE : Azeret Mono, chiffres tabulaires. */
+.creneaux button {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-med);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+  padding: 11px 6px;
+}
+
+.creneaux button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  box-shadow: none;
+  color: #6db4ff;
+}
+
+.creneaux button.choisi {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 0 20px var(--accent-glow);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------------- File */
+
+.ligne-file {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 14px;
+  padding: 13px 2px;
+}
+
+.ligne-file:last-child {
+  border-bottom: 0;
+}
+
+/* Le rang est une VALEUR → or, en mono. */
+.rang {
+  background: var(--gold-soft);
+  border: 1px solid rgba(249, 168, 37, 0.28);
+  border-radius: 999px;
+  color: var(--gold);
+  display: grid;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  height: 35px;
+  place-items: center;
+  width: 35px;
+}
+
+.rang.heure {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-med);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  width: 52px;
+}
+
+.ligne-file .identite {
+  flex: 1;
+  min-width: 0;
+}
+
+.ligne-file .identite b {
+  color: var(--text);
+  display: block;
+  font-weight: 600;
+}
+
+.ligne-file .identite small {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ------------------------------------------------------------- Étiquettes */
+
+.etiquette {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  padding: 3px 11px;
+}
+
+.etiquette.attente {
+  background: var(--gold-soft);
+  border: 1px solid rgba(249, 168, 37, 0.28);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.etiquette.appele {
+  background: var(--green-soft);
+  border: 1px solid rgba(0, 182, 122, 0.3);
+  color: var(--green);
+}
+
+.etiquette.hors-ligne {
+  background: var(--red-soft);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--red);
+}
+
+/* ---------------------------------------------------------------- Messages */
+
+.alerte {
+  border-radius: 10px;
+  font-size: 0.89rem;
+  margin-bottom: 16px;
+  padding: 12px 15px;
+}
+
+.alerte.erreur {
+  background: var(--red-soft);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #ff9d9d;
+}
+
+.alerte.succes {
+  background: var(--green-soft);
+  border: 1px solid rgba(0, 182, 122, 0.3);
+  color: #5ce0b3;
+}
+
+.alerte.info {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  color: #6db4ff;
+}
+
+.vide {
+  color: var(--text-dim);
+  padding: 30px 0;
+  text-align: center;
+}
+
+/* ------------------------------------------- Écran de la salle d'attente */
+
+.salle {
+  margin: -30px -20px -64px;
+  min-height: calc(100dvh - 62px);
+  padding: 36px 28px;
+  position: relative;
+}
+
+/* La grille technique de la charte, réservée aux grandes surfaces. */
+.salle::before {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  content: '';
+  inset: 0;
+  -webkit-mask-image: radial-gradient(60% 55% at 50% 38%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(60% 55% at 50% 38%, #000 30%, transparent 100%);
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.salle > * {
+  position: relative;
+  z-index: 1;
+}
+
+.salle h1 {
+  font-size: 2.1rem;
+}
+
+.salle .sous {
+  color: var(--text-dim);
+  margin-top: 7px;
+}
+
+.salle .appel {
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  background: var(--green-soft);
+  border: 1px solid rgba(0, 182, 122, 0.32);
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(0, 182, 122, 0.14), inset 0 1px 0 var(--glass-edge);
+  margin: 28px 0;
+  padding: 34px;
+  text-align: center;
+}
+
+.salle .appel small {
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.salle .appel strong {
+  color: var(--text);
+  display: block;
+  font-size: 2.7rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 10px 0 6px;
+}
+
+.salle .appel .praticien {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.salle .appel.repos {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+}
+
+.salle .appel.repos small {
+  color: var(--text-dim);
+}
+
+.salle .titre-suite {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.salle .suite {
+  display: grid;
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.salle .suite div {
+  align-items: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  font-size: 1.1rem;
+  gap: 16px;
+  padding: 14px 18px;
+}
+
+.salle .suite span {
+  background: var(--gold-soft);
+  border: 1px solid rgba(249, 168, 37, 0.28);
+  border-radius: 999px;
+  color: var(--gold);
+  display: grid;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  height: 36px;
+  place-items: center;
+  width: 36px;
+}

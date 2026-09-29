@@ -1,5 +1,6 @@
 package ma.rdvsante.rendezvous.depot;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,4 +45,24 @@ public interface DepotRendezVous extends JpaRepository<RendezVous, UUID> {
             ORDER BY c.debut DESC
             """)
     List<RendezVous> parPatient(UUID patientId);
+
+    /**
+     * L'agenda d'une clinique sur une journée — ce que le secrétariat a sous
+     * les yeux pour pointer les arrivées.
+     *
+     * <p>Les annulés sont exclus : ils encombreraient la liste sans qu'on
+     * puisse rien en faire.
+     */
+    @Query("""
+            SELECT r FROM RendezVous r
+            JOIN FETCH r.creneau c
+            JOIN FETCH c.praticien p
+            JOIN FETCH p.clinique cl
+            WHERE cl.id = :cliniqueId
+              AND c.debut >= :debut AND c.debut < :fin
+              AND r.statut <> :annule
+            ORDER BY c.debut
+            """)
+    List<RendezVous> agendaDuJour(UUID cliniqueId, Instant debut, Instant fin,
+                                  StatutRendezVous annule);
 }

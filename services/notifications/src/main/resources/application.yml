@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: notifications
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notifications
+    username: notifications_app
+    password: notifications
+    hikari:
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notifications
+      # earliest : au premier démarrage, le service rattrape tout l'historique
+      # présent dans les topics. C'est ce qu'on veut d'un service qui vient
+      # d'être déployé — il ne doit pas ignorer les rendez-vous déjà pris.
+      auto-offset-reset: earliest
+      # Les décalages sont validés par le code, APRÈS traitement et écriture en
+      # base. Avec la validation automatique, un message lu puis perdu dans un
+      # redémarrage serait considéré comme traité.
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+
+server:
+  port: 8083
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    ma.rdvsante: INFO

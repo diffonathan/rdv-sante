@@ -1,0 +1,21 @@
+<p class="note-demo">
+  Démonstration — cliniques, praticiens et patients sont fictifs. Aucune donnée
+  de santé réelle n’est traitée.
+</p>
+
+<header class="bandeau">
+  <div class="bandeau-contenu">
+    <a class="marque" routerLink="/"><span>RS</span> RDV Santé</a>
+    <nav>
+      <a routerLink="/" routerLinkActive="actif" [routerLinkActiveOptions]="{ exact: true }">
+        Prendre rendez-vous
+      </a>
+      <a routerLink="/secretariat" routerLinkActive="actif">Secrétariat</a>
+      <a routerLink="/salle-attente" routerLinkActive="actif">Salle d’attente</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>

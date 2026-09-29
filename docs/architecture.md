@@ -41,9 +41,17 @@ flowchart LR
 | Service | Responsabilité | Agrégats qu'il possède |
 |---|---|---|
 | **patients** | Identité, coordonnées, consentement, préférence de contact | `Patient` |
-| **rendezvous** | Cliniques, praticiens, créneaux, réservations, file du jour | `Clinique`, `Praticien`, `Creneau`, `RendezVous`, `FileAttente` |
-| **notifications** | Confirmations et rappels, historique, anti-doublon | `Notification`, `Preference` |
+| **rendezvous** | Cliniques, praticiens, créneaux, réservations, file du jour | `Clinique`, `Praticien`, `Creneau`, `RendezVous`, `EntreeFile` |
+| **notifications** | Confirmations et rappels, boîte d'envoi, anti-doublon | `Notification`, `MessageTraite` |
 | **gateway** | Porte d'entrée unique, validation des jetons, routage | — |
+
+Le service `notifications` ne connaît **aucune** adresse de `rendezvous` : il ne
+lit que des topics Kafka. Il recopie les contrats d'événements dont il a besoin
+plutôt que de partager une bibliothèque commune — un module partagé recréerait
+le couplage que les événements servent à défaire, en obligeant tous les
+consommateurs à recompiler avant que l'émetteur ne puisse évoluer. La
+contrepartie obligatoire est `@JsonIgnoreProperties(ignoreUnknown = true)` :
+un champ ajouté par l'émetteur est ignoré au lieu de bloquer la consommation.
 
 **Pourquoi ces trois-là.** Le découpage suit les rythmes de changement, pas les
 couches techniques. L'identité d'un patient change rarement ; les créneaux
@@ -167,7 +175,35 @@ ouvrir l'accès aux services derrière elle.
 
 La version courante, et la seule compatible avec le Node 24 de la machine de
 développement (Angular 18 et 19 s'arrêtent à Node 22). Composants *standalone* et
-*signals* y sont le mode par défaut.
+*signals* y sont le mode par défaut. Le flux SSE alimente directement un signal,
+que les écrans lisent par `computed()` : aucune recopie, aucune scrutation.
+
+### D10 — L'idempotence passe par `ON CONFLICT DO NOTHING`, pas par `save()`
+
+La première version de la garde anti-doublon (décision D3) **ne gardait rien**,
+et rien ne le montrait.
+
+Elle appelait `save()` sur une entité `MessageTraite` dont l'identifiant est
+*assigné* — l'identifiant de l'événement. Spring Data considère alors l'objet
+comme existant et appelle `merge()` : Hibernate fait un SELECT puis un UPDATE.
+La clé primaire n'est jamais violée, aucune exception n'est levée, la méthode
+conclut « nouveau message » et écrit une seconde notification.
+
+Le défaut est invisible à la lecture : le code *ressemble* à une garde. Il n'est
+apparu qu'en rembobinant les topics Kafka et en constatant que 11 messages
+rejoués produisaient 11 notifications de plus.
+
+La garde est désormais une insertion explicite :
+
+```sql
+INSERT INTO message_traite (evenement_id, topic, traite_le)
+VALUES (:evenementId, :topic, now())
+ON CONFLICT (evenement_id) DO NOTHING
+```
+
+Elle renvoie 1 (nouveau) ou 0 (doublon). Deux avantages sur l'exception : le
+contrôle de flux ne passe plus par un `catch`, et l'opération reste atomique
+face à plusieurs consommateurs concurrents — ce que vérifie `IdempotenceIT`.
 
 ---
 

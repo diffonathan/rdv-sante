@@ -85,20 +85,44 @@ de prendre des rendez-vous.
 # 1. l'infrastructure : PostgreSQL (3 bases) + Kafka en mode KRaft
 docker compose -f deploy/compose/infra.yml up -d
 
-# 2. le service rendezvous
+# 2. le service rendezvous (jeu de démonstration chargé par le profil dev)
 cd services/rendezvous && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+# 3. le service notifications, dans un autre terminal
+cd services/notifications && ./mvnw spring-boot:run
+
+# 4. le front
+cd web && npm install && npm start
 ```
 
-Puis ouvrir **http://localhost:8081/actuator/health** : l'état doit être `UP`,
-avec `db` et `kafka` détaillés. C'est la preuve que la chaîne complète répond.
+Puis ouvrir **http://localhost:4200**. Pour vérifier la plomberie sans
+l'interface, **http://localhost:8081/actuator/health** doit répondre `UP` avec
+`db` et `kafka` détaillés.
 
 | Service | Port | État |
 |---|---|---|
-| rendezvous | 8081 | **fonctionnel** — réservation, file d'attente, outbox, SSE |
+| **web** (Angular 22) | 4200 | **les trois écrans** — réservation, secrétariat, salle d'attente |
+| **rendezvous** | 8081 | **fonctionnel** — réservation, file d'attente, outbox, SSE |
+| **notifications** | 8083 | **fonctionnel** — consommateurs Kafka idempotents, boîte d'envoi |
 | patients | 8082 | squelette, pas encore configuré |
-| notifications | 8083 | squelette, pas encore configuré |
 | gateway | 8080 | squelette, pas encore configuré |
-| front Angular | 4200 | **pas encore créé** |
+
+### Les trois écrans
+
+| Adresse | Pour qui | Ce qu'on y fait |
+|---|---|---|
+| `/` | le patient | choisit une clinique, un praticien, un horaire, et réserve |
+| `/secretariat` | l'accueil | pointe les arrivées, appelle le patient suivant |
+| `/salle-attente` | l'écran de la salle | affiche qui est appelé et les trois suivants |
+
+Ouvrez `/secretariat` et `/salle-attente` dans deux fenêtres côte à côte :
+cliquer sur « Appeler le suivant » d'un côté change l'écran de l'autre
+**immédiatement, sans rechargement** — c'est le flux SSE (décision D7).
+
+La boîte d'envoi des notifications se consulte sur
+`http://localhost:8083/api/notifications` : une réservation faite à l'écran y
+apparaît une seconde plus tard, **sans que les deux services se soient parlé
+directement**.
 
 ### L'API du service rendezvous
 

@@ -1,0 +1,156 @@
+@if (confirmation(); as rdv) {
+  <div class="entete-page">
+    <h1>Rendez-vous confirmé</h1>
+    <p>Présentez-vous à l’accueil quinze minutes avant l’heure.</p>
+  </div>
+
+  <div class="carte">
+    <div class="alerte succes">
+      Votre rendez-vous est enregistré. Un rappel vous sera envoyé la veille.
+    </div>
+
+    <div class="grille deux">
+      <div>
+        <h3>Quand</h3>
+        <p>
+          {{ rdv.debut | date: 'EEEE d MMMM' }}<br />
+          à <b>{{ rdv.debut | date: 'HH:mm' }}</b>
+        </p>
+      </div>
+      <div>
+        <h3>Avec qui</h3>
+        <p>{{ rdv.praticienNom }}<br />{{ rdv.specialite }}</p>
+      </div>
+      <div>
+        <h3>Où</h3>
+        <p>{{ rdv.cliniqueNom }}<br />{{ rdv.cliniqueVille }}</p>
+      </div>
+      <div>
+        <h3>Référence</h3>
+        <p><code>{{ rdv.id }}</code></p>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px">
+      <button class="discret" (click)="recommencer()">Prendre un autre rendez-vous</button>
+    </p>
+  </div>
+} @else {
+  <div class="entete-page">
+    <h1>Prendre rendez-vous</h1>
+    <p>Choisissez un praticien et un horaire. La confirmation est immédiate.</p>
+  </div>
+
+  @if (erreur()) {
+    <div class="alerte erreur">{{ erreur() }}</div>
+  }
+
+  <div class="grille deux">
+    <div class="carte">
+      <div class="etape-titre"><b>1</b> Où et avec qui</div>
+
+      <div class="champ">
+        <label for="clinique">Clinique</label>
+        <select
+          id="clinique"
+          [value]="cliniqueId()"
+          (change)="choisirClinique($any($event.target).value)"
+        >
+          @for (c of cliniques(); track c.id) {
+            <option [value]="c.id">{{ c.nom }} — {{ c.ville }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="praticien">Praticien</label>
+        <select
+          id="praticien"
+          [value]="praticienId()"
+          (change)="choisirPraticien($any($event.target).value)"
+        >
+          @for (p of praticiens(); track p.id) {
+            <option [value]="p.id">{{ p.nomComplet }} — {{ p.specialite }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="jour">Jour</label>
+        <input
+          id="jour"
+          type="date"
+          [value]="jour()"
+          [min]="jourMinimum"
+          (change)="choisirJour($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="carte">
+      <div class="etape-titre"><b>2</b> Quel horaire</div>
+
+      @if (chargementCreneaux()) {
+        <p class="vide">Recherche des disponibilités…</p>
+      } @else if (creneaux().length === 0) {
+        <p class="vide">Aucun créneau libre ce jour-là. Essayez une autre date.</p>
+      } @else {
+        <div class="creneaux">
+          @for (c of creneaux(); track c.id) {
+            <button
+              type="button"
+              [class.choisi]="creneauChoisi()?.id === c.id"
+              (click)="creneauChoisi.set(c)"
+            >
+              {{ c.debut | date: 'HH:mm' }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="carte" style="margin-top: 16px">
+    <div class="etape-titre"><b>3</b> Vos coordonnées</div>
+
+    <div class="grille deux">
+      <div class="champ">
+        <label for="nom">Nom complet</label>
+        <input
+          id="nom"
+          name="nom"
+          [(ngModel)]="nom"
+          [class.fautif]="erreursChamp()['patientNom']"
+          placeholder="Fatima Zahra El Idrissi"
+        />
+        @if (erreursChamp()['patientNom']; as m) {
+          <p class="message-champ">{{ m }}</p>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="tel">Téléphone</label>
+        <input
+          id="tel"
+          name="telephone"
+          [(ngModel)]="telephone"
+          [class.fautif]="erreursChamp()['patientTelephone']"
+          placeholder="0661234567"
+        />
+        @if (erreursChamp()['patientTelephone']; as m) {
+          <p class="message-champ">{{ m }}</p>
+        }
+      </div>
+    </div>
+
+    <button class="grand" [disabled]="!peutEnvoyer()" (click)="reserver()">
+      @if (envoiEnCours()) {
+        Enregistrement…
+      } @else if (creneauChoisi(); as c) {
+        Confirmer pour {{ c.debut | date: 'HH:mm' }}
+      } @else {
+        Choisissez d’abord un horaire
+      }
+    </button>
+  </div>
+}

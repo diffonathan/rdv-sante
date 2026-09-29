@@ -1,9 +1,11 @@
 package ma.rdvsante.rendezvous.evenement;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,8 +28,7 @@ import ma.rdvsante.rendezvous.domaine.EvenementSortant;
  * <p>Conséquence à connaître : un message peut partir <strong>deux fois</strong>
  * — envoyé à Kafka, puis le service tombe avant d'avoir noté la publication.
  * C'est pourquoi les consommateurs sont idempotents (décision D3), et pourquoi
- * l'identifiant de la ligne d'outbox voyage avec le message comme clé de
- * déduplication.
+ * l'identifiant de la ligne d'outbox voyage avec le message.
  */
 @Component
 public class PublieurOutbox {
@@ -36,6 +37,9 @@ public class PublieurOutbox {
 
     /** Court volontairement : l'envoi se fait en tenant des verrous de ligne. */
     private static final long DELAI_ENVOI_S = 3;
+
+    /** En-tête portant l'identifiant de la ligne d'outbox. */
+    public static final String EN_TETE_ID = "id-evenement";
 
     private final DepotEvenementSortant depot;
     private final KafkaTemplate<String, String> kafka;
@@ -63,9 +67,7 @@ public class PublieurOutbox {
         int partis = 0;
         for (EvenementSortant evenement : lot) {
             try {
-                kafka.send(evenement.getType(), evenement.getClePartition(),
-                                evenement.getChargeUtile())
-                        .get(DELAI_ENVOI_S, TimeUnit.SECONDS);
+                kafka.send(enregistrer(evenement)).get(DELAI_ENVOI_S, TimeUnit.SECONDS);
                 evenement.marquerPublie(horloge.instant());
                 partis++;
 
@@ -90,5 +92,23 @@ public class PublieurOutbox {
         if (partis > 0) {
             log.debug("{} événement(s) publié(s) sur {}", partis, lot.size());
         }
+    }
+
+    /**
+     * Construit le message Kafka, avec l'identifiant de la ligne d'outbox en
+     * en-tête.
+     *
+     * <p>Cet en-tête est la <strong>clé de déduplication</strong> du
+     * consommateur : puisqu'un message peut partir deux fois, c'est lui qui
+     * permet de reconnaître le doublon. Le placer en en-tête plutôt que dans
+     * la charge utile évite de mêler une préoccupation de transport au contrat
+     * métier — un consommateur qui ne déduplique pas n'a pas à le lire.
+     */
+    private ProducerRecord<String, String> enregistrer(EvenementSortant evenement) {
+        ProducerRecord<String, String> message = new ProducerRecord<>(
+                evenement.getType(), evenement.getClePartition(), evenement.getChargeUtile());
+        message.headers().add(EN_TETE_ID,
+                evenement.getId().toString().getBytes(StandardCharsets.UTF_8));
+        return message;
     }
 }
