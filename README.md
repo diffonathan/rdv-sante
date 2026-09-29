@@ -1,5 +1,11 @@
 # RDV Santé
 
+[![CI](https://github.com/diffonathan/rdv-sante/actions/workflows/ci.yml/badge.svg)](https://github.com/diffonathan/rdv-sante/actions/workflows/ci.yml)
+[![Java](https://img.shields.io/badge/Java-21-0781FE)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-0781FE)](https://spring.io/projects/spring-boot)
+[![Angular](https://img.shields.io/badge/Angular-22-0781FE)](https://angular.dev/)
+[![Licence](https://img.shields.io/badge/licence-MIT-F9A825)](LICENSE)
+
 **Prise de rendez-vous et file d'attente en temps réel pour cliniques et cabinets médicaux.**
 
 Au Maroc, prendre rendez-vous chez un spécialiste passe encore par un appel au
