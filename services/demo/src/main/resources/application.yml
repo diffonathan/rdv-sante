@@ -1,0 +1,96 @@
+# Configuration de la démonstration réunie.
+#
+# ⚠️ Ce fichier est le SEUL chargé.
+#
+# Les trois services portent chacun un `application.yml` à la racine de leur
+# jar. Sur un même chemin de classes, `classpath:/application.yml` n'en
+# désigne qu'un — et lequel dépend de l'ordre du chemin. Les classes de ce
+# module passant en premier, c'est celui-ci qui gagne, et les trois autres sont
+# ignorés en silence.
+#
+# Conséquence : tout ce dont les services ont besoin doit être redéclaré ici.
+# Ce n'est pas un défaut mais une clarification — un déploiement qui réunit
+# trois composants a intérêt à voir sa configuration en un seul endroit plutôt
+# qu'éparpillée dans trois jars.
+
+spring:
+  application:
+    name: rdv-sante-demo
+
+  profiles:
+    # Active TransportLocal et efface les composants qui parlent au courtier.
+    default: demo
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/rdvsante}
+    username: ${SPRING_DATASOURCE_USERNAME:rdvsante}
+    password: ${SPRING_DATASOURCE_PASSWORD:rdvsante}
+    hikari:
+      # Les bases gratuites plafonnent bas — Neon donne quelques dizaines de
+      # connexions pour tout le projet. Trois services dans un seul processus
+      # partagent ici UN pool, ce qui est justement l'avantage du repli.
+      maximum-pool-size: 8
+      # Un hébergeur qui endort le service coupe les connexions sans prévenir.
+      # Les valider avant usage évite la première requête en erreur au réveil.
+      connection-timeout: 20000
+
+  jpa:
+    # Le schéma est posé par Flyway, jamais déduit des entités. `validate`
+    # échouerait au démarrage si les deux divergeaient — ce qui est exactement
+    # ce qu'on veut savoir tout de suite.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    # Les migrations sont appliquées depuis `main()`, avant que Spring démarre :
+    # il y en a trois jeux, et l'auto-configuration n'en gère qu'un.
+    enabled: false
+
+  autoconfigure:
+    exclude:
+      # Sans cette exclusion, Spring Boot construit un KafkaTemplate et démarre
+      # les consommateurs annotés, qui tenteraient d'atteindre un courtier
+      # absent.
+      #
+      # ⚠️ `org.springframework.boot.kafka.autoconfigure`, et non
+      # `org.springframework.boot.autoconfigure.kafka` : Spring Boot 4 a éclaté
+      # son auto-configuration en modules par technologie. Le nom d'avant ne
+      # désigne plus rien, et une exclusion qui ne désigne rien n'exclut rien —
+      # sans le moindre avertissement. Le symptôme arrive plus tard, et
+      # ailleurs : « No group.id found in consumer config » au démarrage des
+      # consommateurs.
+      - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
+
+# Le mot de passe de la documentation. Vide par défaut : l'accès est alors
+# REFUSÉ, plutôt qu'ouvert avec une chaîne vide si la variable est oubliée.
+rdv:
+  documentation:
+    mot-de-passe: ${RDV_DOCUMENTATION_MOT_DE_PASSE:}
+
+server:
+  # L'hébergeur impose le port par une variable et ne le connaît pas à
+  # l'avance : l'écrire en dur rendrait le service injoignable.
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json,image/svg+xml
+  error:
+    # Une trace d'exception envoyée au navigateur révèle des chemins, des
+    # versions, parfois des requêtes.
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    ma.rdvsante: INFO

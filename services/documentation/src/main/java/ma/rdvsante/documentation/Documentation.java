@@ -1,11 +1,15 @@
-package ma.rdvsante.gateway.documentation;
+package ma.rdvsante.documentation;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 /**
  * Le contenu de la documentation technique.
+ *
+ * <p>Classe SIMPLE, sans Spring et sans dépendance : deux applications la
+ * servent — la passerelle quand les services tournent séparément, le module de
+ * démonstration quand ils sont réunis dans un seul processus. Sans ce partage,
+ * il y aurait deux copies du même texte, et au bout de trois corrections, deux
+ * textes différents.
  *
  * Écrit en données plutôt qu'en gabarit : le front construit sa table des
  * matières tout seul, et corriger un texte ne demande de toucher à aucune mise
@@ -19,10 +23,12 @@ import org.springframework.stereotype.Component;
  * été raté — un projet dont la documentation ne mentionne aucune erreur n'a
  * pas été relu, ou n'a rien appris.
  */
-@Component
-class SectionsDocumentation {
+public final class Documentation {
 
-    List<Section> contenu() {
+    private Documentation() {
+    }
+
+    public static List<Section> sections() {
         return List.of(
                 new Section("probleme", "Le problème, vu de la salle d'attente", List.of(
                         Bloc.p("""
@@ -199,17 +205,17 @@ class SectionsDocumentation {
         );
     }
 
-    record Section(String id, String titre, List<Bloc> blocs) {}
+    public record Section(String id, String titre, List<Bloc> blocs) {}
 
     /** Un paragraphe ou un extrait de code. Deux champs plutôt que deux types :
      *  le front n'a qu'à regarder lequel est renseigné. */
-    record Bloc(String p, String code) {
+    public record Bloc(String p, String code) {
 
-        static Bloc p(String texte) {
+        public static Bloc p(String texte) {
             return new Bloc(texte, null);
         }
 
-        static Bloc code(String extrait) {
+        public static Bloc code(String extrait) {
             return new Bloc(null, extrait);
         }
     }

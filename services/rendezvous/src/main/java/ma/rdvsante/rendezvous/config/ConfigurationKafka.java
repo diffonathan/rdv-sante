@@ -4,8 +4,14 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
+// Pas de courtier en mode démonstration : les services y sont réunis
+// dans un seul processus et s'échangent leurs événements en mémoire.
+// Sans ceci, ce bean réclamerait un KafkaAdmin qui n'existe pas, et le
+// contexte refuserait de démarrer.
+@Profile("!demo")
 class ConfigurationKafka {
 
     /**

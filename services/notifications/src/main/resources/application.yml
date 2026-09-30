@@ -20,7 +20,10 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    # Chemin propre au service : réunis dans un seul processus (profil
+    # « demo »), les trois jars exposeraient sinon le même dossier et
+    # Flyway y trouverait trois fois la version V1.
+    locations: classpath:db/migration/notifications
 
   kafka:
     bootstrap-servers: ${RDV_KAFKA:localhost:9092}

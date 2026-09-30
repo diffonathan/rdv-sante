@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 
+import ma.rdvsante.documentation.Documentation;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -57,7 +59,6 @@ class ControleurDocumentation {
     private static final int ESSAIS_PAR_MINUTE = 5;
 
     private final String motDePasseAttendu;
-    private final SectionsDocumentation sections;
 
     /** Compteur d'essais par adresse. Une carte en mémoire suffit : la
      *  passerelle est le seul point d'entrée, et un redémarrage qui remet les
@@ -65,11 +66,8 @@ class ControleurDocumentation {
      *  main assez longtemps pour que cela change quelque chose. */
     private final Map<String, Essais> essaisParAdresse = new ConcurrentHashMap<>();
 
-    ControleurDocumentation(
-            @Value("${rdv.documentation.mot-de-passe:}") String motDePasseAttendu,
-            SectionsDocumentation sections) {
+    ControleurDocumentation(@Value("${rdv.documentation.mot-de-passe:}") String motDePasseAttendu) {
         this.motDePasseAttendu = motDePasseAttendu;
-        this.sections = sections;
     }
 
     @PostMapping
@@ -92,7 +90,7 @@ class ControleurDocumentation {
 
         essaisParAdresse.remove(adresse);
 
-        return Mono.just(ResponseEntity.ok(sections.contenu()));
+        return Mono.just(ResponseEntity.ok(Documentation.sections()));
     }
 
     /**

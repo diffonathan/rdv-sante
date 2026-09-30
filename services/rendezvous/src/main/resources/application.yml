@@ -30,7 +30,10 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    # Chemin propre au service : réunis dans un seul processus (profil
+    # « demo »), les trois jars exposeraient sinon le même dossier et
+    # Flyway y trouverait trois fois la version V1.
+    locations: classpath:db/migration/rendezvous
 
   kafka:
     bootstrap-servers: ${RDV_KAFKA:localhost:9092}
@@ -70,7 +73,7 @@ spring:
     # db/demo s'ajoute ici, et NULLE PART ailleurs : une base de production ne
     # verra jamais le jeu de démonstration, même si quelqu'un se trompe de
     # fichier de configuration.
-    locations: classpath:db/migration, classpath:db/demo
+    locations: classpath:db/migration/rendezvous, classpath:db/demo
   jpa:
     properties:
       hibernate:

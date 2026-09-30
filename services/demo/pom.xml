@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>ma.rdvsante</groupId>
+	<artifactId>demo</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<name>demo</name>
+	<description>Les trois services réunis dans un seul processus, pour la démonstration en ligne</description>
+
+	<!--
+		POURQUOI CE MODULE EXISTE
+		═════════════════════════
+
+		La démonstration en ligne tourne sur un hébergement gratuit de 512 Mo.
+		Quatre machines virtuelles Java et un courtier Kafka n'y tiennent pas —
+		et aucun hébergeur ne propose de Kafka gratuit permanent depuis la
+		fermeture d'Upstash Kafka.
+
+		Ce module réunit donc les trois services métier dans un seul processus,
+		et fait passer les événements en mémoire au lieu du réseau.
+
+		CE QUI NE CHANGE PAS, et c'est tout l'intérêt de la manœuvre :
+
+		  - le code des services n'est pas modifié. Ce module en DÉPEND, il ne
+		    les réécrit pas ;
+		  - chaque service garde son outbox, ses migrations, ses entités, ses
+		    règles. L'outbox est toujours vidée par lots, retient les échecs et
+		    compte les tentatives ;
+		  - les consommateurs restent idempotents, et la clé de déduplication
+		    voyage toujours avec le message ;
+		  - le dépôt, lui, garde les quatre services séparés avec le vrai
+		    Kafka, et c'est ce que les tests exercent.
+
+		CE QUI CHANGE, et il faut le dire :
+
+		  - un seul processus, donc une panne le fait tomber en entier. La
+		    tolérance aux pannes que l'architecture procure n'est PAS
+		    démontrable en ligne ;
+		  - une seule base et un seul compte, au lieu d'une base et d'un compte
+		    par service. Le cloisonnement par les droits n'est donc pas
+		    démontrable non plus — il reste vérifié par un test du dépôt ;
+		  - pas de passerelle : les trois services servent leurs routes sous la
+		    même origine, et il n'y a plus rien à router.
+
+		Autrement dit, l'architecture est intacte ; c'est son déploiement qui
+		est replié. Un choix de déploiement, pas un choix de conception.
+	-->
+
+	<properties>
+		<java.version>21</java.version>
+	</properties>
+
+	<dependencies>
+		<!--
+			Les trois services, comme bibliothèques.
+
+			C'est possible parce que chacun publie un jar ORDINAIRE comme
+			artefact principal, son jar exécutable portant le classificateur
+			« exec ». Sans cela, leurs classes seraient rangées sous BOOT-INF/,
+			où aucun compilateur ne va les chercher.
+		-->
+		<dependency>
+			<groupId>ma.rdvsante</groupId>
+			<artifactId>rendezvous</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ma.rdvsante</groupId>
+			<artifactId>patients</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ma.rdvsante</groupId>
+			<artifactId>notifications</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Le texte de la documentation, partagé avec la passerelle. -->
+		<dependency>
+			<groupId>ma.rdvsante</groupId>
+			<artifactId>documentation</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

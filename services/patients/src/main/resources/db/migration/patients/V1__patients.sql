@@ -32,7 +32,15 @@ CREATE UNIQUE INDEX idx_patient_telephone ON patient (telephone);
 -- (décision D2). Volontairement RECOPIÉE plutôt que partagée dans une
 -- bibliothèque commune : un module partagé obligerait les deux services à
 -- évoluer et à se redéployer ensemble, ce que le découpage cherche à éviter.
-CREATE TABLE evenement_sortant (
+-- Nommée par son service, et c'est délibéré.
+--
+-- « rendezvous » possède aussi une outbox. Tant que chaque service a sa base,
+-- deux tables homonymes ne gênent personne. Le jour où on les regarde
+-- ensemble — une base d'analyse, une reprise de données, ou la démonstration
+-- en ligne qui réunit les services dans un seul processus faute d'hébergement
+-- gratuit capable d'en faire tourner quatre — on ne sait plus laquelle on lit,
+-- et rien ne le signale.
+CREATE TABLE evenement_sortant_patient (
     id              UUID         PRIMARY KEY,
     agregat_type    VARCHAR(60)  NOT NULL,
     agregat_id      UUID         NOT NULL,
@@ -45,8 +53,8 @@ CREATE TABLE evenement_sortant (
     derniere_erreur TEXT
 );
 
-CREATE INDEX idx_evenement_sortant_en_attente
-    ON evenement_sortant (cree_le)
+CREATE INDEX idx_evenement_sortant_patient_en_attente
+    ON evenement_sortant_patient (cree_le)
     WHERE publie_le IS NULL;
 
 COMMENT ON TABLE patient IS

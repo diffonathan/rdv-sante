@@ -21,7 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import ma.rdvsante.patients.TestcontainersConfiguration;
-import ma.rdvsante.patients.depot.DepotEvenementSortant;
+import ma.rdvsante.patients.depot.DepotEvenementSortantPatient;
 import ma.rdvsante.patients.depot.DepotPatient;
 import ma.rdvsante.patients.domaine.Patient;
 import ma.rdvsante.patients.evenement.Evenements;
@@ -42,7 +42,7 @@ class ServicePatientIT {
 
     @Autowired private ServicePatient service;
     @Autowired private DepotPatient depot;
-    @Autowired private DepotEvenementSortant outbox;
+    @Autowired private DepotEvenementSortantPatient outbox;
 
     @BeforeEach
     void nettoyer() {
@@ -51,7 +51,7 @@ class ServicePatientIT {
     }
 
     /** Neutralise le reformatage jsonb de PostgreSQL. */
-    private static String sansEspaces(ma.rdvsante.patients.domaine.EvenementSortant e) {
+    private static String sansEspaces(ma.rdvsante.patients.domaine.EvenementSortantPatient e) {
         return e.getChargeUtile().replace(" ", "");
     }
 

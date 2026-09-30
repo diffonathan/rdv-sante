@@ -1,0 +1,58 @@
+# Déploiement de la démonstration sur Render (offre gratuite).
+#
+# À importer depuis render.com → New → Blueprint, en pointant ce dépôt.
+#
+# ⚠️ CE QUI EST DÉPLOYÉ N'EST PAS L'ARCHITECTURE DU PROJET.
+#
+# Le dépôt contient quatre services indépendants qui s'échangent des événements
+# par Apache Kafka, chacun avec sa base et son compte. C'est ce que les tests
+# exercent, et c'est ce qu'il faut regarder pour juger la conception.
+#
+# Ici, les trois services métier tournent dans UN processus et s'échangent
+# leurs événements en mémoire. Raison : l'offre gratuite donne 512 Mo, où
+# quatre machines virtuelles Java ne tiennent pas — et aucun hébergeur ne
+# propose de Kafka gratuit permanent depuis la fermeture d'Upstash Kafka.
+#
+# Ce qui reste vrai : le code des services, leurs outbox, leurs migrations,
+# l'idempotence des consommateurs, et les garanties posées dans PostgreSQL —
+# notamment l'impossibilité de réserver deux fois le même créneau.
+#
+# Ce qui est perdu : la tolérance aux pannes (un seul processus tombe en
+# entier) et le cloisonnement par les droits de base (un seul compte).
+#
+# Voir `deploy/DEMONSTRATION.md`.
+
+services:
+  - type: web
+    name: rdv-sante
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: frankfurt # le plus proche du Maroc parmi les régions gratuites
+    plan: free
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+
+    envVars:
+      # À renseigner À LA MAIN dans le tableau de bord, depuis une base Neon
+      # gratuite (neon.tech). Jamais dans ce fichier : il est public.
+      #
+      # La base gratuite de Render expire au bout de 30 jours ; celle de Neon
+      # est permanente. Une démonstration qui meurt au bout d'un mois est pire
+      # qu'une absence de démonstration quand le lien est dans un CV.
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+
+      # Le mot de passe de la documentation technique. Non défini, l'accès est
+      # REFUSÉ — plutôt qu'ouvert avec une chaîne vide si la variable est
+      # oubliée.
+      - key: RDV_DOCUMENTATION_MOT_DE_PASSE
+        sync: false
+
+      # Mesuré : 372 Mo au repos avec ces réglages. L'image les pose déjà,
+      # mais les répéter ici les rend visibles sans ouvrir le Dockerfile.
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"

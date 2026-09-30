@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import ma.rdvsante.patients.depot.DepotEvenementSortant;
+import ma.rdvsante.patients.depot.DepotEvenementSortantPatient;
 import ma.rdvsante.patients.depot.DepotPatient;
-import ma.rdvsante.patients.domaine.EvenementSortant;
+import ma.rdvsante.patients.domaine.EvenementSortantPatient;
 import ma.rdvsante.patients.domaine.Patient;
 import ma.rdvsante.patients.evenement.Evenements;
 import tools.jackson.core.JacksonException;
@@ -44,11 +44,11 @@ public class ServicePatient {
     }
 
     private final DepotPatient depot;
-    private final DepotEvenementSortant outbox;
+    private final DepotEvenementSortantPatient outbox;
     private final ObjectMapper json;
     private final Clock horloge;
 
-    public ServicePatient(DepotPatient depot, DepotEvenementSortant outbox,
+    public ServicePatient(DepotPatient depot, DepotEvenementSortantPatient outbox,
                           ObjectMapper json, Clock horloge) {
         this.depot = depot;
         this.outbox = outbox;
@@ -119,7 +119,7 @@ public class ServicePatient {
                     "Événement patient.enregistre non sérialisable : " + e.getMessage(), e);
         }
 
-        outbox.save(new EvenementSortant(UUID.randomUUID(), "Patient", patient.getId(),
+        outbox.save(new EvenementSortantPatient(UUID.randomUUID(), "Patient", patient.getId(),
                 Evenements.TOPIC_ENREGISTRE, corps));
     }
 }

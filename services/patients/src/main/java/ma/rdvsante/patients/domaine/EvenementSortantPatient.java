@@ -23,10 +23,12 @@ import lombok.NoArgsConstructor;
  * coûtent moins cher qu'une dépendance commune.
  */
 @Entity
-@Table(name = "evenement_sortant")
+// Nommée par son service : « rendezvous » a son propre outbox, et deux
+// tables homonymes se confondent dès qu'on les regarde ensemble.
+@Table(name = "evenement_sortant_patient")
 @Getter
 @NoArgsConstructor
-public class EvenementSortant {
+public class EvenementSortantPatient {
 
     @Id
     private UUID id;
@@ -59,7 +61,7 @@ public class EvenementSortant {
     @Column(name = "derniere_erreur")
     private String derniereErreur;
 
-    public EvenementSortant(UUID id, String agregatType, UUID agregatId,
+    public EvenementSortantPatient(UUID id, String agregatType, UUID agregatId,
                             String type, String chargeUtile) {
         this.id = id;
         this.agregatType = agregatType;

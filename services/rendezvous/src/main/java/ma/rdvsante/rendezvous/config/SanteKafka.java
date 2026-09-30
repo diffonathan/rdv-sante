@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Ajoute Kafka à {@code /actuator/health}.
@@ -22,6 +23,10 @@ import org.springframework.stereotype.Component;
  * réponse JSON.
  */
 @Component("kafka")
+// Pas de courtier en mode démonstration : les services y sont réunis dans un
+// seul processus et s'échangent leurs événements en mémoire. Sonder un Kafka
+// absent ferait clignoter l'état de santé en rouge sans qu'il y ait de panne.
+@Profile("!demo")
 class SanteKafka implements HealthIndicator {
 
     /** Au-delà, on considère le courtier injoignable plutôt que lent. */

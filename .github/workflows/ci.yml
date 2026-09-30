@@ -20,7 +20,7 @@ jobs:
       # Un service qui casse ne doit pas masquer l'état de l'autre.
       fail-fast: false
       matrix:
-        service: [rendezvous, notifications, patients, gateway]
+        service: [rendezvous, notifications, patients, gateway, demo]
 
     steps:
       - uses: actions/checkout@v4
@@ -35,12 +35,20 @@ jobs:
           cache: maven
 
       - name: Compilation et tests
-        working-directory: services/${{ matrix.service }}
+        working-directory: services
+        # Lancé depuis l'agrégateur avec `-am` : le module construit ET ce
+        # dont il dépend. La passerelle a besoin du module `documentation`,
+        # et `demo` des trois services. Sans `-am`, la construction échoue sur
+        # une dépendance absente du dépôt local.
+        #
         # verify enchaîne Surefire (unitaires) puis Failsafe (intégration).
+        # `test` seul ne lancerait PAS les tests d'intégration, qui sont
+        # l'essentiel de ce qui est vérifié ici.
+        #
         # Les tests d'intégration démarrent PostgreSQL et Kafka via
         # Testcontainers — le démon Docker est présent sur les exécuteurs
         # ubuntu-latest, rien à installer.
-        run: ./mvnw -B --no-transfer-progress verify
+        run: ./mvnw -B --no-transfer-progress verify -pl ${{ matrix.service }} -am
 
       - name: Rapports de test
         if: always()
@@ -71,3 +79,15 @@ jobs:
       - name: Construction
         working-directory: web
         run: npx ng build
+
+  image:
+    name: Image de démonstration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # On construit sans pousser : le but est d'attraper une image qui ne se
+      # construit plus, pas de publier. Un Dockerfile cassé se découvre sinon
+      # au moment du déploiement, c'est-à-dire au pire moment.
+      - name: Construction de l'image
+        run: docker build -t rdv-sante-demo:ci .

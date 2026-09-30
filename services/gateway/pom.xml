@@ -31,6 +31,18 @@
 		<spring-cloud.version>2025.1.3</spring-cloud.version>
 	</properties>
 	<dependencies>
+		<!--
+			Le texte de la documentation technique, partagé avec le module de
+			démonstration qui le sert lorsque les services tournent réunis.
+			Aucune dépendance transitive : ce module ne contient que des
+			enregistrements et du texte.
+		-->
+		<dependency>
+			<groupId>ma.rdvsante</groupId>
+			<artifactId>documentation</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>

@@ -167,6 +167,23 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!--
+						Le jar EXÉCUTABLE prend un classificateur, et l'artefact
+						principal reste un jar ordinaire.
+
+						Sans cela, `mvn install` publie le jar exécutable comme
+						artefact principal — et un jar Spring Boot range ses
+						classes sous BOOT-INF/classes, où aucun compilateur ne
+						va les chercher. Le module de démonstration, qui réunit
+						les trois services dans un seul processus, ne pourrait
+						pas en dépendre.
+
+						Rien ne change pour l'exécution : le jar exécutable
+						existe toujours, sous le nom <artifactId>-<version>-exec.jar.
+					-->
+					<classifier>exec</classifier>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

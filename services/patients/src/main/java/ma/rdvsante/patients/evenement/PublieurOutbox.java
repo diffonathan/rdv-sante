@@ -1,44 +1,40 @@
 package ma.rdvsante.patients.evenement;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import ma.rdvsante.patients.depot.DepotEvenementSortant;
-import ma.rdvsante.patients.domaine.EvenementSortant;
+import ma.rdvsante.patients.depot.DepotEvenementSortantPatient;
+import ma.rdvsante.patients.domaine.EvenementSortantPatient;
 
 /**
- * Vide l'outbox vers Kafka. Même mécanique que dans « rendezvous », y compris
+ * Vide l'outbox vers le transport. Même mécanique que dans « rendezvous », y compris
  * l'en-tête {@code id-evenement} qui sert de clé de déduplication au
  * consommateur (décision D3).
+ *
+ * <p>Il ne connaît pas Kafka, mais un {@link TransportEvenements} : c'est ce
+ * qui permet à la démonstration en ligne de faire passer les mêmes événements
+ * en mémoire, sans qu'une ligne de la logique ci-dessous change.
  */
 @Component
 public class PublieurOutbox {
 
     private static final Logger log = LoggerFactory.getLogger(PublieurOutbox.class);
-    private static final long DELAI_ENVOI_S = 3;
-
-    public static final String EN_TETE_ID = "id-evenement";
-
-    private final DepotEvenementSortant depot;
-    private final KafkaTemplate<String, String> kafka;
+    private final DepotEvenementSortantPatient depot;
+    private final TransportEvenements transport;
     private final Clock horloge;
     private final int tailleLot;
 
-    public PublieurOutbox(DepotEvenementSortant depot, KafkaTemplate<String, String> kafka,
+    public PublieurOutbox(DepotEvenementSortantPatient depot, TransportEvenements transport,
                           Clock horloge, @Value("${rdv.outbox.taille-lot:50}") int tailleLot) {
         this.depot = depot;
-        this.kafka = kafka;
+        this.transport = transport;
         this.horloge = horloge;
         this.tailleLot = tailleLot;
     }
@@ -46,20 +42,15 @@ public class PublieurOutbox {
     @Scheduled(fixedDelayString = "${rdv.outbox.periode-ms:1000}")
     @Transactional
     public void publierLeLotSuivant() {
-        List<EvenementSortant> lot = depot.lotAPublier(tailleLot);
+        List<EvenementSortantPatient> lot = depot.lotAPublier(tailleLot);
         if (lot.isEmpty()) {
             return;
         }
 
-        for (EvenementSortant evenement : lot) {
+        for (EvenementSortantPatient evenement : lot) {
             try {
-                ProducerRecord<String, String> message = new ProducerRecord<>(
-                        evenement.getType(), evenement.getClePartition(),
-                        evenement.getChargeUtile());
-                message.headers().add(EN_TETE_ID,
-                        evenement.getId().toString().getBytes(StandardCharsets.UTF_8));
-
-                kafka.send(message).get(DELAI_ENVOI_S, TimeUnit.SECONDS);
+                transport.envoyer(evenement.getType(), evenement.getClePartition(),
+                        evenement.getChargeUtile(), evenement.getId());
                 evenement.marquerPublie(horloge.instant());
 
             } catch (InterruptedException e) {

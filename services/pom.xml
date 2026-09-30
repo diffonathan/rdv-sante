@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ma.rdvsante</groupId>
+	<artifactId>services</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>services</name>
+	<description>Agrégateur : construit les services dans le bon ordre</description>
+
+	<!--
+		AGRÉGATEUR SEULEMENT, pas un parent.
+
+		Chaque module garde `spring-boot-starter-parent` comme parent et reste
+		constructible seul — `cd rendezvous && ./mvnw test` fonctionne comme
+		avant. Ce fichier ne fait qu'une chose : permettre de tout construire en
+		une commande, dans le bon ordre.
+
+		L'ordre, Maven le déduit des dépendances et non de la liste ci-dessous :
+		`documentation` avant la passerelle qui l'utilise, les trois services
+		avant `demo` qui en dépend. Écrire l'ordre à la main serait une
+		information de plus à tenir à jour, et fausse au premier changement.
+
+		Il est devenu nécessaire le jour où `demo` a dû dépendre des trois
+		services : sans lui, il fallait installer chaque module à la main avant
+		de construire l'image, et un oubli produisait un jar contenant une
+		version périmée d'un service — ce qui s'est produit, et ne se voit
+		qu'à l'exécution.
+	-->
+
+	<modules>
+		<module>documentation</module>
+		<module>rendezvous</module>
+		<module>patients</module>
+		<module>notifications</module>
+		<module>gateway</module>
+		<module>demo</module>
+	</modules>
+</project>
