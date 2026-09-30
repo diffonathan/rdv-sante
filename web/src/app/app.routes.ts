@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 
 /**
- * Quatre écrans, quatre publics : le patient qui réserve, le secrétariat qui
- * pilote la journée, l'écran de la salle d'attente, et le lecteur technique.
+ * Cinq écrans, cinq publics : le patient qui réserve, le secrétariat qui
+ * pilote la journée, l'écran de la salle d'attente, le lecteur technique, et — derrière un mot de
+ * passe — la documentation détaillée.
  *
  * Chargement différé : l'écran de salle d'attente tourne sur une télévision
  * qu'on n'éteint jamais, il n'a aucune raison d'embarquer le formulaire de
@@ -29,6 +30,12 @@ export const routes: Routes = [
     path: 'technique',
     loadComponent: () => import('./pages/technique/technique').then((m) => m.Technique),
     title: 'Sous le capot — RDV Santé',
+  },
+  {
+    path: 'documentation',
+    loadComponent: () =>
+      import('./pages/documentation/documentation').then((m) => m.Documentation),
+    title: 'Documentation technique — RDV Santé',
   },
   { path: '**', redirectTo: '' },
 ];

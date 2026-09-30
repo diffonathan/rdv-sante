@@ -177,6 +177,34 @@ L'infrastructure est plafonnée : 320 Mo pour PostgreSQL, 640 Mo pour Kafka, et
 WSL2 est limité à 5 Go par `~/.wslconfig`. Sur une machine de 16 Go où le
 navigateur en prend 3, ces plafonds ne sont pas un luxe.
 
+## La documentation technique
+
+L'application embarque deux niveaux d'explication, pour deux lecteurs :
+
+- **« Sous le capot »** (`/technique`), ouvert à tous, sans un seul terme
+  technique — il s'adresse à quelqu'un qui trie des candidatures ;
+- **la documentation** (`/documentation`), derrière un mot de passe, où les
+  choses sont nommées : la course sur un créneau, l'outbox, l'erreur
+  d'idempotence que j'ai commise et la façon dont je l'ai trouvée.
+
+Le mot de passe vient de l'environnement, jamais du dépôt — celui-ci est
+public :
+
+```bash
+export RDV_DOCUMENTATION_MOT_DE_PASSE='…'
+cd services/gateway && ./mvnw spring-boot:run
+```
+
+Non définie, la variable **ferme** l'accès au lieu de l'ouvrir avec une chaîne
+vide : une variable oubliée au déploiement serait sinon une porte grande
+ouverte, sans le moindre signe visible.
+
+Le contenu est rendu **par le serveur**, et seulement après vérification. Une
+documentation écrite dans le front et simplement masquée partirait dans le
+paquet JavaScript : il suffirait de l'ouvrir pour tout lire sans jamais taper
+le mot de passe. C'est la différence entre une porte fermée et une porte peinte
+sur un mur.
+
 ## Tests
 
 ```bash

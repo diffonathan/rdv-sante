@@ -45,6 +45,18 @@ spring:
             allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
             allowedHeaders: '*'
 
+# Documentation technique, ouverte par un mot de passe.
+#
+# La valeur vient de l'environnement, JAMAIS du dépôt : celui-ci est public,
+# et un mot de passe écrit ici serait lisible par tout le monde.
+#
+# Vide par défaut, et le contrôleur refuse alors l'accès plutôt que d'ouvrir
+# avec une chaîne vide — une variable oubliée au déploiement serait sinon une
+# porte grande ouverte, sans le moindre signe visible.
+rdv:
+  documentation:
+    mot-de-passe: ${RDV_DOCUMENTATION_MOT_DE_PASSE:}
+
 server:
   port: 8080
 

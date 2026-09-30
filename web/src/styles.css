@@ -21,8 +21,13 @@
   --font-mono: 'Azeret Mono', ui-monospace, 'Fira Code', monospace;
 
   --bg: #0a0a0c;
+  /* Les halos portent l'accent DU PROJET, pas celui dont la charte est
+     issue. Ce fond gardait le bleu #0781fe de ConfluenceTerminal : sur une
+     application verte, il tirait tout l'écran vers le froid sans qu'on sache
+     pourquoi. C'est le genre de reste qu'un thème laisse derrière lui, et que
+     la charte maison signale explicitement comme « à corriger, pas à garder ». */
   --fond-charte:
-    radial-gradient(88% 62% at 12% 0%, rgba(7, 129, 254, 0.14), transparent 62%),
+    radial-gradient(88% 62% at 12% 0%, rgba(0, 182, 122, 0.14), transparent 62%),
     radial-gradient(76% 56% at 88% 100%, rgba(249, 168, 37, 0.11), transparent 62%),
     linear-gradient(160deg, #101014 0%, #0a0a0c 60%, #08080a 100%);
 
@@ -936,4 +941,158 @@ label {
   color: var(--text-muted);
   font-size: 0.79rem;
   padding: 4px 11px;
+}
+
+/* ============================================================================
+   Documentation technique (/documentation)
+   ----------------------------------------------------------------------------
+   Une page de LECTURE : mesure de ligne bornée, interlignage généreux, et
+   aucune animation. Les écrans d'exploitation cherchent la densité ; celui-ci
+   cherche le confort sur plusieurs milliers de signes, et les deux besoins ne
+   se règlent pas de la même façon.
+============================================================================ */
+
+.doc {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.doc-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.doc-tete h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+/* 68 caractères environ : au-delà, l'œil perd la ligne suivante en revenant
+   à la marge. C'est la seule raison de cette largeur. */
+.doc-intro {
+  max-width: 44rem;
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.doc-sommaire {
+  margin-top: 2.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.doc-sommaire ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.4rem 1.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.doc-sommaire a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.doc-sommaire a:hover {
+  color: var(--vert);
+}
+
+.doc-section {
+  margin-top: 3rem;
+  /* Le titre ne se colle pas au bandeau quand on arrive par le sommaire. */
+  scroll-margin-top: 5.5rem;
+}
+
+.doc-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  letter-spacing: -0.015em;
+}
+
+.doc-section h2 .nombre,
+.doc-sommaire .nombre {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--vert);
+}
+
+.doc-section p {
+  max-width: 48rem;
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.doc-section pre {
+  max-width: 48rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.doc-verrou {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 2rem 0;
+}
+
+.doc-verrou .carte {
+  width: min(30rem, 100%);
+  padding: 2rem;
+}
+
+.doc-verrou h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.doc-verrou form {
+  margin-top: 1.5rem;
+}
+
+.doc-verrou label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.doc-verrou input {
+  width: 100%;
+}
+
+.doc-verrou button {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.doc-verrou .erreur {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--red);
+}
+
+.doc-note {
+  margin: 1.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--text-dim);
 }

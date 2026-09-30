@@ -1,0 +1,87 @@
+@if (sections(); as contenu) {
+  <article class="doc">
+    <header class="doc-tete">
+      <div>
+        <h1>Documentation technique</h1>
+        <p class="doc-intro">
+          Ce que ce projet garantit, comment, et ce qu’il a fallu corriger en chemin.
+          Les décisions sont expliquées avec leur contrepartie : un choix sans
+          inconvénient est généralement un choix mal compris.
+        </p>
+      </div>
+      <a class="discret" [href]="depot" target="_blank" rel="noopener">Le code source ↗</a>
+    </header>
+
+    <nav class="doc-sommaire carte">
+      <p class="etiquette">Sommaire</p>
+      <ol>
+        @for (section of contenu; track section.id; let i = $index) {
+          <li>
+            <a [href]="'#' + section.id">
+              <span class="nombre">{{ numero(i) }}</span>
+              {{ section.titre }}
+            </a>
+          </li>
+        }
+      </ol>
+    </nav>
+
+    @for (section of contenu; track section.id; let i = $index) {
+      <section class="doc-section" [id]="section.id">
+        <h2>
+          <span class="nombre">{{ numero(i) }}</span>
+          {{ section.titre }}
+        </h2>
+
+        @for (bloc of section.blocs; track $index) {
+          @if (bloc.p) {
+            <p>{{ bloc.p }}</p>
+          } @else if (bloc.code) {
+            <pre class="carte"><code>{{ bloc.code }}</code></pre>
+          }
+        }
+      </section>
+    }
+  </article>
+} @else {
+  <!-- Le verrou. Centré et sobre : c'est une porte, pas une page. -->
+  <section class="doc-verrou">
+    <div class="carte">
+      <h1>Documentation technique</h1>
+      <p class="doc-intro">
+        Les choix de conception, ce que la base de données garantit et comment,
+        et les pièges rencontrés en chemin. Plus détaillée que l’écran
+        « Sous le capot », et réservée.
+      </p>
+
+      <form (ngSubmit)="ouvrir()">
+        <label for="mot-de-passe">Mot de passe</label>
+        <input
+          id="mot-de-passe"
+          type="password"
+          autocomplete="off"
+          required
+          [ngModel]="motDePasse()"
+          (ngModelChange)="motDePasse.set($event)"
+          name="motDePasse"
+        />
+
+        @if (erreur(); as message) {
+          <p class="erreur" role="alert">{{ message }}</p>
+        }
+
+        <button type="submit" [disabled]="enCours()">
+          {{ enCours() ? 'Vérification…' : 'Ouvrir' }}
+        </button>
+      </form>
+
+      <p class="doc-note">
+        Le mot de passe n’est écrit nulle part dans le dépôt : il vient d’une
+        variable d’environnement lue par la passerelle. La comparaison se fait
+        en temps constant, et cinq essais par minute sont autorisés.
+        Le contenu, lui, ne quitte le serveur qu’une fois le mot de passe
+        vérifié — il n’est donc pas lisible dans le code de cette page.
+      </p>
+    </div>
+  </section>
+}
