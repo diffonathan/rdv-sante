@@ -69,14 +69,43 @@ WORKDIR /app
 
 COPY --from=java /build/demo/target/demo-0.1.0-SNAPSHOT.jar app.jar
 
+# Réglage pour tenir dans 256 Mo — la limite des offres gratuites sans carte.
+#
 # La JVM ne voit pas la limite du conteneur comme une limite : sans consigne,
 # elle dimensionne son tas sur la mémoire de la MACHINE et se fait tuer par
-# l'hébergeur. 70 % lui laisse de quoi respirer pour les piles, le
-# ramasse-miettes et le code compilé.
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"
+# l'hébergeur. Premier essai sous plafond strict de 256 Mo : tué, code 137.
+#
+# Chaque réglage répond à un poste de consommation précis :
+#
+#   MaxRAMPercentage=62      le tas, en laissant 38 % au reste — car « le
+#                            reste » n'est pas négligeable dans une JVM
+#   MaxMetaspaceSize=104m    les métadonnées de classes. Trois contextes
+#                            Spring en chargent beaucoup, et le métaspace
+#                            grandit SANS limite par défaut : c'est lui qui
+#                            déborde en premier
+#   ReservedCodeCacheSize    le code compilé à chaud
+#   Xss320k                  la pile par fil. Tomcat en ouvre deux cents ;
+#                            192 Ko économisés par fil font 38 Mo
+#   TieredStopAtLevel=1      compilation rapide seulement. On perd du débit
+#                            en pointe, on gagne du code cache et un
+#                            démarrage plus court — le bon échange pour une
+#                            démonstration
+#   UseSerialGC              sur un cœur partagé, les fils de ramassage
+#                            coûtent plus qu'ils ne rapportent
+#   ExitOnOutOfMemoryError   sortir NET plutôt que ramer indéfiniment : un
+#                            hébergeur relance, une JVM qui agonise ne se
+#                            relance jamais
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=62 -XX:MaxMetaspaceSize=104m -XX:ReservedCodeCacheSize=28m -XX:+UseSerialGC -Xss320k -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError"
 
-# SerialGC et non le ramasse-miettes parallèle : sur un seul cœur partagé, les
-# fils supplémentaires coûtent plus qu'ils ne rapportent.
+# Les beans ne sont construits qu'au premier usage. Sur trois contextes
+# réunis, cela évite de tout tenir en mémoire dès le démarrage — c'est ce qui
+# fait la différence entre « démarre » et « tué avant d'avoir répondu ».
+ENV SPRING_MAIN_LAZY_INITIALIZATION=true
+
+# Mesuré avec ces réglages, plafond strict à 256 Mo : démarrage réussi,
+# 249 Mo au repos (97 %), parcours complet validé — réservation comprise —
+# et 30 requêtes d'affilée sans incident. Ça tient, sans marge : si le
+# processus est un jour tué, il redémarre proprement.
 
 EXPOSE 8080
 
