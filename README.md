@@ -20,6 +20,24 @@ pilote la journée depuis un seul écran.
 > **Projet de démonstration.** Les données sont fictives, les cliniques
 > inventées. Aucune donnée de santé réelle n'est traitée.
 
+## Essayer
+
+**→ [rdv-sante.onrender.com](https://rdv-sante.onrender.com)**
+
+Réservez un créneau, puis ouvrez le *Secrétariat* et la *Salle d'attente* dans
+deux onglets : pointer une arrivée met la file à jour sans recharger.
+
+> L'hébergement est gratuit, donc l'application s'endort après quinze minutes
+> sans visite. Le premier appel la réveille et peut demander une minute — une
+> machine virtuelle Java démarre moins vite qu'un script. Les suivants sont
+> immédiats.
+>
+> Ce qui est déployé est un **repli** : les trois services métier réunis dans un
+> seul processus, les événements passant en mémoire au lieu de traverser Kafka.
+> Aucune offre gratuite ne fait tourner quatre JVM et un courtier. Le code des
+> services est inchangé — voir [`deploy/DEMONSTRATION.md`](deploy/DEMONSTRATION.md)
+> pour ce qui est préservé et ce qui est perdu.
+
 ---
 
 ## Ce que ce dépôt démontre
@@ -33,8 +51,8 @@ pilote la journée depuis un seul écran.
 | **Sécurité** | Keycloak (OAuth2 / OIDC), services en *resource servers*, rôles patient / secrétaire / médecin |
 | **Front** | Angular 22, composants standalone, signals, flux temps réel par SSE |
 | **Tests** | JUnit 5, Mockito, Testcontainers (PostgreSQL et Kafka réels), objectif > 80 % de couverture |
-| **Industrialisation** | Docker Compose, Helm et Kubernetes, GitHub Actions, analyse SonarQube |
-| **Observabilité** | Actuator, métriques Prometheus, traçage distribué |
+| **Industrialisation** | Docker Compose, GitHub Actions, image de déploiement mono-processus |
+| **Observabilité** | Actuator, métriques Prometheus sur la passerelle |
 
 ---
 
